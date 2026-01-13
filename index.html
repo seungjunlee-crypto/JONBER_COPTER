@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>존버콥터 : JONBER COPTER</title>
+    <style>
+        /* === 1. 기본 설정 === */
+        @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Press+Start+2P&family=Noto+Sans+KR:wght@400;700&display=swap');
+
+        body {
+            margin: 0; display: flex; justify-content: center; align-items: center;
+            height: 100vh; background: #111; image-rendering: pixelated;
+            font-family: 'Press Start 2P', cursive; overflow: hidden; user-select: none;
+        }
+
+        /* === 2. 레이아웃 === */
+        .main-container { display: flex; gap: 20px; align-items: flex-start; }
+
+        .game-frame {
+            position: relative; width: 700px; height: 400px;
+            border: 4px solid #fff; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.6);
+            background: #4fa4b8; /* 초기 하늘색 */
+            transition: background 2s ease;
+        }
+
+        .side-panel {
+            width: 240px; height: 400px; background: #222; border: 4px solid #fff; border-radius: 12px;
+            padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; color: #fff;
+        }
+
+        /* === 3. 스킨 및 헬기 === */
+        :root { --heli-color: #e74c3c; --heli-shadow: #c0392b; }
+        .skin-military { --heli-color: #556B2F; --heli-shadow: #3e4f20; }
+        .skin-marine { --heli-color: #00BFFF; --heli-shadow: #0088cc; }
+        .skin-gold { --heli-color: #FFD700; --heli-shadow: #DAA520; filter: drop-shadow(0 0 5px gold); }
+
+        .pixel-heli {
+            width: 50px; height: 26px; background: var(--heli-color);
+            border-radius: 6px 12px 12px 6px;
+            box-shadow: 6px 0 0 var(--heli-shadow), -10px 5px 0 #444, 16px 5px 0 #8ecae6; 
+            position: relative; transition: background 0.3s;
+        }
+        .heli-wrapper { position: absolute; left: 150px; top: 150px; transition: top 0.1s; z-index: 20; }
+        .pixel-heli::before { content: ''; position: absolute; top: -10px; left: 10px; width: 44px; height: 5px; background: #222; border-radius: 2px; animation: rotor linear infinite; animation-duration: calc(0.1s / var(--speed-factor, 1)); }
+        .pixel-heli::after { content: ''; position: absolute; bottom: -8px; left: 6px; width: 40px; height: 5px; border-bottom: 4px solid #444; border-left: 4px solid transparent; border-right: 4px solid transparent; }
+
+        /* === 4. 채팅 === */
+        .chat-container {
+            position: absolute; bottom: 40px; left: 10px; width: 250px; height: 150px; overflow: hidden;
+            pointer-events: none; display: flex; flex-direction: column-reverse; z-index: 50;
+        }
+        .chat-msg {
+            background: rgba(0, 0, 0, 0.5); color: #fff; padding: 4px 8px; margin-top: 4px; border-radius: 4px;
+            font-family: 'Noto Sans KR', sans-serif; font-size: 11px; text-shadow: 1px 1px 0 #000; animation: fadeChat 5s forwards;
+        }
+        .chat-name { font-weight: bold; color: #ffd700; margin-right: 5px; }
+
+        /* === 5. UI === */
+        .center-msg {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; pointer-events: auto; background: rgba(0,0,0,0.85);
+            padding: 25px; border-radius: 10px; border: 2px solid #fff; width: 320px; z-index: 200;
+        }
+        .bet-container { display: flex; gap: 5px; margin-bottom: 10px; width: 100%; }
+        .bet-btn {
+            flex: 1; padding: 10px 0; font-family: 'Noto Sans KR', sans-serif; font-weight: bold;
+            font-size: 12px; cursor: pointer; border: 2px solid #555; background: #222; color: #aaa; border-radius: 4px; transition: 0.2s;
+        }
+        .bet-btn:hover { background: #333; }
+        .bet-btn.active { border-color: #ffd700; color: #000; background: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+
+        /* 닉네임 입력창 스타일 */
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-label { font-size: 10px; color: #aaa; margin-bottom: 5px; font-family: 'Noto Sans KR'; display: block; }
+        #nickname-input {
+            width: 100%; padding: 10px; box-sizing: border-box; background: #333; border: 2px solid #555;
+            color: #fff; font-family: 'Noto Sans KR', sans-serif; font-weight: bold; text-align: center;
+            border-radius: 4px; font-size: 14px; outline: none; transition: 0.2s;
+        }
+        #nickname-input:focus { border-color: #4CAF50; background: #222; }
+
+        #start-btn { background: #4CAF50; color: white; border: none; padding: 15px 0; font-family: 'Noto Sans KR', sans-serif; font-weight:bold; font-size: 16px; margin-bottom: 8px; cursor: pointer; box-shadow: 0 5px 0 #2E7D32; border-radius: 4px; display: block; width: 100%; }
+        #start-btn:active { box-shadow: 0 2px 0 #2E7D32; transform: translateY(3px); }
+        #shop-btn { background: #E91E63; color: white; border: none; padding: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; cursor: pointer; border-radius: 4px; width: 100%; margin-bottom: 5px; }
+        #reset-btn { background: #555; color: #ccc; border: none; padding: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; cursor: pointer; border-radius: 4px; width: 100%;}
+
+        /* 기록(족보) */
+        .history-bar {
+            position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 150;
+            background: rgba(0,0,0,0.5); padding: 5px; border-radius: 20px;
+        }
+        .history-dot {
+            width: 12px; height: 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.3); transition: transform 0.2s;
+        }
+        .history-dot:hover { transform: scale(1.5); }
+        .h-blue { background: #3498db; box-shadow: 0 0 5px #3498db; }
+        .h-green { background: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
+        .h-red { background: #e74c3c; box-shadow: 0 0 5px #e74c3c; }
+        .h-gold { background: #f1c40f; box-shadow: 0 0 8px #f1c40f; border: 1px solid #fff;}
+
+        /* 상점 */
+        .shop-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .shop-title { font-size: 20px; color: #ffd700; margin-bottom: 20px; font-family: 'Press Start 2P'; }
+        .skin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .skin-card { background: #333; border: 2px solid #555; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; width: 120px; transition: 0.2s; }
+        .skin-card.owned { border-color: #4CAF50; } .skin-card.equipped { border-color: #ffd700; background: #443300; }
+        .skin-preview { width: 40px; height: 20px; margin: 10px auto; display: block; }
+        .skin-btn { margin-top: 5px; padding: 4px; font-size: 10px; cursor: pointer; width: 100%; border:none;}
+        .btn-buy { background: #E91E63; color: white; } .btn-equip { background: #2196F3; color: white; }
+        .btn-close { margin-top: 20px; background: #555; color: white; border: none; padding: 10px 20px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif;}
+
+        /* 기타 스타일 */
+        .my-status { border-bottom: 2px solid #555; padding-bottom: 15px; margin-bottom: 15px; text-align: center; }
+        .rank-badge { display: inline-block; padding: 5px 10px; background: #ffd700; color: #000; font-weight: bold; border-radius: 4px; font-size: 12px; margin-bottom: 8px; }
+        .my-money { font-size: 14px; color: #4caf50; text-shadow: 1px 1px 0 #000; }
+        .side-title { color: #aaa; text-align: center; margin-bottom: 10px; font-size: 12px; font-family: 'Noto Sans KR', sans-serif;}
+        .leaderboard-list { flex-grow: 1; overflow-y: auto; }
+        .lb-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 10px; color: #fff; padding-bottom: 5px; border-bottom: 1px dashed #333; font-family: 'Noto Sans KR', sans-serif; }
+        .lb-me { color: #ffd700; font-weight: bold; }
+        .lb-dead { text-decoration: line-through; color: #ff5555; opacity: 0.5; }
+        .lb-escaped { color: #4caf50; font-weight: bold;}
+        .lb-glitch { color: #ff3333; animation: blink 0.1s infinite; }
+        
+        /* 배경 및 애니메이션 */
+        .bg-layer { position: absolute; width: 200%; bottom: 0; left: 0; background-repeat: repeat-x; }
+        .bg-clouds { top: 30px; height: 120px; opacity: 0.8; background-image: radial-gradient(circle at 50% 50%, #fff 20px, transparent 25px), radial-gradient(circle at 60% 70%, #fff 30px, transparent 35px); background-size: 250px 120px; animation: scroll linear infinite; animation-duration: calc(40s / var(--speed-factor, 1)); }
+        .bg-ground { height: 60px; bottom: 0; background: #263238; border-top: 5px dashed #37474f; animation: scroll linear infinite; animation-duration: calc(5s / var(--speed-factor, 1)); }
+        .stars { position:absolute; width:100%; height:100%; top:0; left:0; pointer-events:none; opacity:0; transition: opacity 2s; background-image: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px); background-size: 550px 550px, 350px 350px; background-position: 0 0, 40px 60px; animation: scroll 60s linear infinite; }
+        .show-stars { opacity: 1; }
+        @keyframes scroll { to { transform: translateX(-50%); } }
+        .heli-rumble { animation: rumble 0.1s infinite; }
+        @keyframes rumble { 0% { transform: translate(0, 0); } 25% { transform: translate(-2px, 2px); } 50% { transform: translate(2px, -2px); } 75% { transform: translate(-2px, -2px); } 100% { transform: translate(0, 0); } }
+        @keyframes rotor { 0% { transform: scaleX(1); opacity:1; } 50% { transform: scaleX(0.2); opacity:0.6; } 100% { transform: scaleX(1); opacity:1; } }
+        .bot { position: absolute; width: 8px; height: 14px; background: #fff; box-shadow: 0 -6px 0 #ffcc80; z-index: 15; animation: botDrop 3s forwards; }
+        .parachute { position: absolute; top: -25px; left: -12px; width: 32px; height: 16px; background: #eee; border-radius: 32px 32px 0 0; transform: scale(0); animation: openChute 3s 0.3s forwards; border-top: 2px solid #ccc; }
+        .parachute::before, .parachute::after { content: ''; position: absolute; bottom: -8px; width: 1px; height: 12px; background: #fff; }
+        .parachute::before { left: 4px; transform: rotate(20deg); } .parachute::after { right: 4px; transform: rotate(-20deg); }
+        .player-chute .bot { background: #ffd700; box-shadow: 0 -6px 0 #fff; }
+        .player-chute .parachute { background: #ffd700; border-top: 2px solid #ffcc00; }
+        .player-chute .parachute::before, .player-chute .parachute::after { background: #ffd700; }
+        @keyframes botDrop { 0% { opacity: 1; left: 160px; top: var(--heli-y); } 100% { left: -50px; top: 450px; opacity: 1; } }
+        @keyframes openChute { 20% { transform: scale(1); } 100% { transform: scale(1); } }
+        .smoke { position: absolute; width: 15px; height: 15px; background: #222; border-radius: 50%; opacity: 0.9; animation: smokeOut 0.8s forwards; }
+        @keyframes smokeOut { to { transform: translate(-150px, -50px) scale(3); opacity: 0; } }
+        .spark { position: absolute; width: 6px; height: 6px; background: #ffcc00; border-radius: 50%; box-shadow: 0 0 5px #ff5500; animation: sparkOut 0.5s forwards ease-out; }
+        @keyframes sparkOut { to { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+        .crashed-anim { animation: crashDown 1s forwards !important; }
+        @keyframes crashDown { 0% { transform: rotate(0deg); } 100% { transform: rotate(500deg); top: 500px; } }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; }
+        .top-info { text-align: left; transition: opacity 0.2s; }
+        #score-box { font-family: 'Black Ops One', cursive; font-size: 36px; color: #ffd700; text-shadow: 3px 3px 0 #000; }
+        #timer-box { font-size: 20px; color: #fff; text-shadow: 2px 2px 0 #000; margin-top: 5px;}
+        .hud-glitch { animation: glitchAnim 0.1s infinite; color: #ff3333 !important; text-shadow: 2px 0 #fff, -2px 0 #000 !important; }
+        @keyframes glitchAnim { 0% { opacity: 1; } 20% { opacity: 0.8; transform: skewX(-5deg); } 40% { opacity: 1; transform: skewX(5deg); } 60% { opacity: 0.5; } 80% { opacity: 0.9; } 100% { opacity: 1; } }
+        .hud-warning { position: absolute; top: 40px; right: 20px; background: rgba(255, 0, 0, 0.2); border: 2px solid #ff3333; color: #ff3333; padding: 10px 15px; border-radius: 4px; font-weight: bold; font-size: 14px; text-align: center; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); display: none; z-index: 200; animation: blink 0.15s infinite alternate; font-family: 'Noto Sans KR', sans-serif;}
+        @keyframes blink { from { opacity: 1; } to { opacity: 0.3; } }
+        .bottom-info { display: flex; justify-content: space-between; align-items: flex-end; }
+        #speed-box { font-size: 24px; color: #fff; text-shadow: 2px 2px 0 #000; font-weight: bold; }
+        #status-msg { font-size: 14px; color: #ccc; text-shadow: 1px 1px 0 #000; font-family: 'Noto Sans KR', sans-serif;}
+        .fever-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255, 0, 0, 0.15); pointer-events: none; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="game-frame" id="game-frame">
+            <div class="stars" id="star-layer"></div>
+            <div class="bg-layer bg-clouds" id="cloud-layer"></div>
+            <div class="bg-layer bg-ground" id="ground-layer"></div>
+            <div class="fever-overlay" id="fever-filter"></div>
+            <div id="dynamic-layer"></div>
+            
+            <div class="history-bar" id="history-box"></div>
+
+            <div class="heli-wrapper" id="heli">
+                <div class="pixel-heli" id="heli-body"></div>
+            </div>
+
+            <div class="chat-container" id="chat-box"></div>
+
+            <div class="ui-layer">
+                <div class="top-info" id="hud-top">
+                    <div id="score-box">0 G</div>
+                    <div id="timer-box">00.00s</div>
+                </div>
+
+                <div id="warning-box" class="hud-warning">경고<br>엔진 결함 발생</div>
+
+                <div class="center-msg" id="center-ui">
+                    <h2 style="color:white; margin-bottom:15px; font-size: 18px;">존버콥터</h2>
+                    
+                    <div class="input-group">
+                        <span class="input-label">파일럿 닉네임</span>
+                        <input type="text" id="nickname-input" placeholder="이름 입력 (최대 8자)" maxlength="8">
+                    </div>
+
+                    <div style="color: #aaa; font-size: 10px; margin-bottom: 5px; font-family: 'Noto Sans KR';">배팅 금액 선택:</div>
+                    <div class="bet-container">
+                        <button class="bet-btn active" onclick="setBet(1000, 1, this)">1천원<br>(x1)</button>
+                        <button class="bet-btn" onclick="setBet(10000, 10, this)">1만원<br>(x10)</button>
+                        <button class="bet-btn" onclick="setBet(50000, 50, this)">5만원<br>(x50)</button>
+                    </div>
+
+                    <div style="margin-bottom: 15px; color: #ffd700; font-size: 12px; font-family: 'Noto Sans KR'; font-weight:bold;" id="entry-fee-text">참가비: 1,000 G</div>
+                    
+                    <button id="start-btn">게임 시작</button>
+                    <button id="shop-btn" onclick="openShop()">🛒 상점</button>
+                    <button id="reset-btn" onclick="resetData()">🔄 데이터 초기화</button>
+                </div>
+
+                <div class="bottom-info">
+                    <div id="speed-box">0 km/h</div>
+                    <div id="status-msg">비행 준비 완료</div>
+                </div>
+            </div>
+            
+            <div class="shop-modal" id="shop-ui">
+                <div class="shop-title">HELICOPTER SHOP</div>
+                <div class="skin-grid" id="skin-list"></div>
+                <button class="btn-close" onclick="closeShop()">닫기</button>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="my-status">
+                <div class="side-title">내 지갑</div>
+                <div class="rank-badge" id="my-rank-badge">CITIZEN</div>
+                <div class="my-money" id="my-money-display">10,000 G</div>
+            </div>
+            <div class="side-title">🏆 실시간 랭킹 🏆</div>
+            <div class="leaderboard-list" id="lb-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // === 사운드 안전 로딩 시스템 ===
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        const Sound = {
+            playTone: (freq, type, duration, vol = 0.1) => {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            },
+            playNoise: (duration) => {
+                if (!audioCtx) return;
+                const bufferSize = audioCtx.sampleRate * duration;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                noise.connect(gain);
+                gain.connect(audioCtx.destination);
+                noise.start();
+            },
+            playClick: () => Sound.playTone(800, 'square', 0.1, 0.05),
+            playStart: () => { Sound.playTone(400, 'sine', 0.1); setTimeout(()=>Sound.playTone(600, 'sine', 0.2), 100); },
+            playCash: () => { Sound.playTone(1200, 'sine', 0.1); setTimeout(()=>Sound.playTone(1800, 'sine', 0.3), 50); },
+            playCrash: () => { Sound.playNoise(0.5); Sound.playTone(100, 'sawtooth', 0.5, 0.2); }
+        };
+
+        let engineOsc = null;
+        let engineGain = null;
+        function startEngineSound() {
+            if (!audioCtx) return;
+            if (engineOsc) stopEngineSound();
+            engineOsc = audioCtx.createOscillator();
+            engineGain = audioCtx.createGain();
+            engineOsc.type = 'sawtooth';
+            engineOsc.frequency.value = 50;
+            engineGain.gain.value = 0.05;
+            engineOsc.connect(engineGain);
+            engineGain.connect(audioCtx.destination);
+            engineOsc.start();
+        }
+        function updateEnginePitch(speed) {
+            if(engineOsc && audioCtx) {
+                const targetFreq = 50 + (speed / 10); 
+                engineOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.1);
+            }
+        }
+        function stopEngineSound() {
+            if(engineOsc && audioCtx) {
+                engineGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                engineOsc.stop(audioCtx.currentTime + 0.5);
+                engineOsc = null;
+            }
+        }
+
+        const CONFIG = { baseGoldRate: 0.5, maxSpeed: 1200, startMoney: 10000 };
+        let currentBet = 1000;
+        let betMultiplier = 1;
+
+        const SKINS = [
+            { id: 'default', name: '기본 레드', price: 0, color: '#e74c3c' },
+            { id: 'military', name: '밀리터리', price: 10000, color: '#556B2F', class: 'skin-military' },
+            { id: 'marine', name: '마린 블루', price: 30000, color: '#00BFFF', class: 'skin-marine' },
+            { id: 'gold', name: '황금 헬기', price: 100000, color: '#FFD700', class: 'skin-gold' }
+        ];
+
+        const CHAT_LOGS = {
+            start: ["가즈아!", "이번엔 10만 간다", "탑승 완료", "영차영차", "ㄱㄱㄱ"],
+            fever: ["버텨!!", "아직 아냐", "돔황챠!!", "와 미쳤다", "풀매수 가나요"],
+            warning: ["연기 뭐야?", "짭이네 ㅋ", "ㅌㅌㅌ", "어어 점마 왜저러노", "탈출각?"],
+            crash: ["한강물 따뜻하냐", "아 내 돈...", "주작겜 망해라", "ㅋㅋㅋㅋㅋ", "나만 아니면 돼~"],
+            escape: ["꺼억~", "치킨값 벌었다", "수고링", "익절합니다 ^^", "안전제일"]
+        };
+
+        let state = {
+            status: 'ready', ms: 0, currentRunGold: 0, speed: 0, crashTime: 0, 
+            isFever: false, feverTime: 0, feverRate: 2, nextRateChange: 0,
+            events: [], airPocketY: 0, isSysError: false, bgLevel: 0
+        };
+
+        let myWallet = { money: CONFIG.startMoney, rank: 'CITIZEN', ownedSkins: ['default'], equippedSkin: 'default', name: '' };
+        let history = []; 
+        let participants = [];
+        let lastTimestamp = 0;
+
+        const ui = {
+            frame: document.getElementById('game-frame'),
+            heli: document.getElementById('heli'), heliBody: document.getElementById('heli-body'),
+            dynamic: document.getElementById('dynamic-layer'), score: document.getElementById('score-box'),
+            timer: document.getElementById('timer-box'), speed: document.getElementById('speed-box'),
+            msg: document.getElementById('status-msg'), center: document.getElementById('center-ui'),
+            btn: document.getElementById('start-btn'), lb: document.getElementById('lb-content'),
+            fever: document.getElementById('fever-filter'), warning: document.getElementById('warning-box'),
+            hudTop: document.getElementById('hud-top'), myMoney: document.getElementById('my-money-display'),
+            myRankBadge: document.getElementById('my-rank-badge'), chat: document.getElementById('chat-box'),
+            shop: document.getElementById('shop-ui'), skinList: document.getElementById('skin-list'),
+            entryText: document.getElementById('entry-fee-text'), historyBox: document.getElementById('history-box'),
+            stars: document.getElementById('star-layer'), clouds: document.getElementById('cloud-layer'), ground: document.getElementById('ground-layer'),
+            nameInput: document.getElementById('nickname-input')
+        };
+        const root = document.documentElement;
+
+        window.onload = () => { loadData(); applySkin(); updateHistoryUI(); };
+
+        function loadData() {
+            const saved = localStorage.getItem('heliTycoonDataV6'); // V6 사용 (닉네임 추가)
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    if(data.wallet) myWallet = data.wallet;
+                    if(data.history) history = data.history;
+                } catch(e) {
+                    console.error("데이터 로드 실패", e);
+                }
+            }
+            if(myWallet.name) ui.nameInput.value = myWallet.name;
+            updateRank(); updateWalletUI();
+        }
+        function saveData() { 
+            localStorage.setItem('heliTycoonDataV6', JSON.stringify({ wallet: myWallet, history: history })); 
+            updateWalletUI(); 
+        }
+        function resetData() {
+            if(!confirm("초기화 하시겠습니까?")) return;
+            localStorage.removeItem('heliTycoonDataV6');
+            myWallet = { money: CONFIG.startMoney, rank: 'CITIZEN', ownedSkins: ['default'], equippedSkin: 'default', name: '' };
+            history = [];
+            ui.nameInput.value = '';
+            applySkin(); saveData(); updateHistoryUI(); alert("초기화 완료!");
+        }
+
+        function updateRank() {
+            const m = myWallet.money;
+            if (m < 5000) myWallet.rank = "BEGGAR"; else if (m < 50000) myWallet.rank = "CITIZEN";
+            else if (m < 100000) myWallet.rank = "RICH"; else if (m < 1000000) myWallet.rank = "TYCOON";
+            else myWallet.rank = "GOD";
+        }
+        function updateWalletUI() {
+            ui.myMoney.innerText = myWallet.money.toLocaleString() + " G";
+            ui.myRankBadge.innerText = myWallet.rank;
+            if(myWallet.rank === 'BEGGAR') ui.myRankBadge.style.background = "#aaa";
+            else if(myWallet.rank === 'CITIZEN') ui.myRankBadge.style.background = "#4CAF50";
+            else if(myWallet.rank === 'RICH') ui.myRankBadge.style.background = "#03A9F4";
+            else if(myWallet.rank === 'TYCOON') ui.myRankBadge.style.background = "#E91E63";
+            else ui.myRankBadge.style.background = "#ffd700";
+        }
+        
+        function updateHistoryUI() {
+            ui.historyBox.innerHTML = '';
+            history.forEach(res => {
+                const dot = document.createElement('div');
+                let colorClass = 'h-blue';
+                if (res.time < 2) colorClass = 'h-blue';
+                else if (res.time < 10) colorClass = 'h-green';
+                else if (res.time < 25) colorClass = 'h-red';
+                else colorClass = 'h-gold';
+                dot.className = `history-dot ${colorClass}`;
+                ui.historyBox.appendChild(dot);
+            });
+        }
+
+        function setBet(amount, mult, btnElement) {
+            initAudio(); Sound.playClick();
+            currentBet = amount;
+            betMultiplier = mult;
+            ui.entryText.innerText = `참가비: ${amount.toLocaleString()} G`;
+            const buttons = document.querySelectorAll('.bet-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+        }
+
+        function openShop() { initAudio(); Sound.playClick(); ui.shop.style.display = 'flex'; renderShop(); }
+        function closeShop() { initAudio(); Sound.playClick(); ui.shop.style.display = 'none'; }
+        
+        function renderShop() {
+            ui.skinList.innerHTML = '';
+            SKINS.forEach(skin => {
+                const div = document.createElement('div');
+                const isOwned = myWallet.ownedSkins.includes(skin.id);
+                const isEquipped = myWallet.equippedSkin === skin.id;
+                div.className = `skin-card ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`;
+                div.innerHTML = `<div style="font-size:12px; font-weight:bold; font-family:'Noto Sans KR'">${skin.name}</div><div class="skin-preview" style="background:${skin.color}; border-radius:3px;"></div><div class="skin-price">${skin.price === 0 ? '무료' : skin.price.toLocaleString() + ' G'}</div><button class="skin-btn ${isOwned ? 'btn-equip' : 'btn-buy'}">${isEquipped ? '장착 중' : (isOwned ? '장착하기' : '구매하기')}</button>`;
+                div.onclick = () => handleSkinAction(skin);
+                ui.skinList.appendChild(div);
+            });
+        }
+
+        function handleSkinAction(skin) {
+            const isOwned = myWallet.ownedSkins.includes(skin.id);
+            if (isOwned) {
+                initAudio(); Sound.playClick();
+                myWallet.equippedSkin = skin.id; applySkin(); renderShop(); saveData();
+            } else {
+                if (myWallet.money >= skin.price) {
+                    if(confirm(`${skin.name}을(를) 구매하시겠습니까?`)) {
+                        initAudio(); Sound.playCash();
+                        myWallet.money -= skin.price; myWallet.ownedSkins.push(skin.id); myWallet.equippedSkin = skin.id;
+                        applySkin(); renderShop(); saveData();
+                    }
+                } else alert("잔액이 부족합니다!");
+            }
+        }
+        function applySkin() {
+            const skinId = myWallet.equippedSkin; const skinData = SKINS.find(s => s.id === skinId);
+            ui.heliBody.className = 'pixel-heli'; if(skinData.class) ui.heliBody.classList.add(skinData.class);
+        }
+
+        function addChat(name, msg) {
+            const div = document.createElement('div'); div.className = 'chat-msg';
+            div.innerHTML = `<span class="chat-name">${name}:</span> ${msg}`;
+            ui.chat.prepend(div); if(ui.chat.children.length > 5) ui.chat.lastChild.remove();
+        }
+        function randomChat(type) {
+            if(Math.random() > 0.6) return;
+            const list = CHAT_LOGS[type]; const msg = list[Math.floor(Math.random() * list.length)];
+            const botName = participants.length > 0 ? participants[Math.floor(Math.random()*(participants.length-1))+1].name : "익명";
+            addChat(botName, msg);
+        }
+
+        ui.btn.addEventListener('click', (e) => { e.stopPropagation(); handleAction(); });
+        document.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); handleAction(); } });
+        function handleAction() {
+            if (state.status === 'ready') startGame();
+            else if (state.status === 'playing') playerEscape();
+            else if (state.status === 'crashed' || state.status === 'escaped') resetGame();
+        }
+
+        function startGame() {
+            initAudio(); 
+            if (myWallet.money < currentBet) { alert("참가비가 부족합니다!"); return; }
+            
+            // 닉네임 저장
+            const inputName = ui.nameInput.value.trim();
+            if(inputName) myWallet.name = inputName;
+            
+            Sound.playStart();
+            startEngineSound();
+
+            myWallet.money -= currentBet;
+            saveData();
+
+            state.status = 'playing'; state.ms = 0; state.currentRunGold = 0; state.speed = 100; 
+            state.isFever = false; state.isSysError = false; state.airPocketY = 0;
+            state.bgLevel = 0;
+            state.crashTime = Math.random() * 25000 + 5000; 
+            state.feverTime = Math.random() * 10000 + 5000;
+            state.nextRateChange = state.feverTime + 2000; 
+            state.events = [];
+            
+            ui.frame.style.background = "#4fa4b8";
+            ui.stars.classList.remove('show-stars');
+            ui.clouds.style.opacity = 0.8;
+            ui.ground.style.opacity = 1;
+            
+            let numFakes = Math.floor(Math.random() * 3); 
+            for(let i=0; i<numFakes; i++) state.events.push({ type: 'fake', time: Math.random() * (state.crashTime - 2000) + 2000 });
+            if(Math.random() < 0.6) state.events.push({ type: 'airpocket', time: Math.random() * (state.crashTime - 5000) + 3000 });
+            if(Math.random() < 0.7) state.events.push({ type: 'syserror', time: Math.random() * (state.crashTime - 5000) + 2000 });
+
+            setupParticipants();
+            
+            ui.center.style.display = 'none'; ui.warning.style.display = 'none';
+            ui.msg.innerText = "스페이스바를 눌러 탈출하세요"; ui.heli.style.top = "150px"; ui.heli.className = "heli-wrapper"; 
+            ui.heliBody.classList.remove('heli-rumble', 'rotor-stop');
+            ui.fever.style.display = 'none'; ui.hudTop.classList.remove('hud-glitch'); ui.chat.innerHTML = '';
+            
+            // 닉네임 반영된 환영 메시지
+            const playerName = myWallet.name || "파일럿";
+            addChat("SYSTEM", `${playerName}님, 탑승 환영합니다!`); 
+            randomChat('start');
+            lastTimestamp = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameLoop(timestamp) {
+            if (state.status !== 'playing' && state.status !== 'escaped') return;
+            const deltaTime = timestamp - lastTimestamp; lastTimestamp = timestamp;
+            state.ms += deltaTime;
+
+            if (state.speed < CONFIG.maxSpeed) state.speed += (deltaTime * 0.05);
+            updateEnginePitch(state.speed);
+            root.style.setProperty('--speed-factor', 1 + (state.speed / 300));
+
+            const flightSec = state.ms / 1000;
+            if (flightSec > 20 && state.bgLevel < 2) {
+                state.bgLevel = 2;
+                ui.frame.style.background = "#0f2027";
+                ui.stars.classList.add('show-stars');
+                ui.clouds.style.opacity = 0;
+                ui.ground.style.opacity = 0;
+            } else if (flightSec > 8 && state.bgLevel < 1) {
+                state.bgLevel = 1;
+                ui.frame.style.background = "#654ea3";
+            }
+
+            let rate = CONFIG.baseGoldRate * betMultiplier; 
+            
+            if (state.ms >= state.feverTime) {
+                if (!state.isFever) { 
+                    state.isFever = true; ui.fever.style.display = 'block'; 
+                    ui.heliBody.classList.add('heli-rumble'); randomChat('fever'); 
+                    Sound.playTone(600, 'square', 0.5);
+                }
+                if (state.ms >= state.nextRateChange) {
+                    state.feverRate = Math.floor(Math.random() * 3) + 2; 
+                    state.nextRateChange = state.ms + (Math.random() * 1000 + 500);
+                }
+                ui.msg.innerText = `피버 타임! 수익 x${state.feverRate}`; ui.msg.style.color = "#ff3333";
+                rate = rate * state.feverRate;
+            }
+
+            let earnedNow = Math.floor(deltaTime * rate);
+            participants.forEach(p => {
+                if (p.status === 'playing') {
+                    p.gold += earnedNow;
+                    if (p.isBot && state.ms >= p.targetTime) {
+                        p.status = 'escaped'; spawnBotVisual(false);
+                        if(Math.random()<0.3) addChat(p.name, CHAT_LOGS['escape'][Math.floor(Math.random()*CHAT_LOGS['escape'].length)]);
+                    }
+                }
+            });
+            if (state.status === 'playing') state.currentRunGold = participants[0].gold;
+
+            state.events.forEach((ev) => { if (state.ms >= ev.time && !ev.triggered) { ev.triggered = true; triggerEvent(ev.type); } });
+            if (state.ms >= state.crashTime) { crashGame(); return; }
+
+            if (state.isSysError) { ui.score.innerText = "### G"; ui.timer.innerText = "오류"; ui.hudTop.classList.add('hud-glitch'); } 
+            else { ui.score.innerText = state.currentRunGold.toLocaleString() + " G"; ui.timer.innerText = (state.ms / 1000).toFixed(2) + "s"; ui.hudTop.classList.remove('hud-glitch'); }
+            
+            ui.speed.innerText = Math.floor(state.speed) + " km/h";
+            let shake = Math.sin(timestamp / 100) * 3; let finalY = 150 + shake + state.airPocketY;
+            ui.heli.style.top = finalY + "px"; root.style.setProperty('--heli-y', finalY + "px");
+            updateLeaderboard(); requestAnimationFrame(gameLoop);
+        }
+
+        function triggerEvent(type) {
+            if (type === 'fake') { 
+                spawnWarningEffect(); showHudWarning(); 
+                ui.msg.innerText = "연기 감지됨!"; randomChat('warning'); 
+                Sound.playTone(300, 'sawtooth', 0.3);
+            }
+            else if (type === 'syserror') { state.isSysError = true; ui.msg.innerText = "시스템 오류 발생..."; setTimeout(() => { state.isSysError = false; ui.msg.innerText = "시스템 복구됨"; }, 2000); }
+            else if (type === 'airpocket') { ui.msg.innerText = "난기류 발생!"; let drop = setInterval(() => { state.airPocketY += 10; if (state.airPocketY >= 80) { clearInterval(drop); setTimeout(() => { let rec = setInterval(() => { state.airPocketY -= 5; if(state.airPocketY <= 0) { state.airPocketY = 0; clearInterval(rec); } }, 20); }, 200); } }, 10); }
+        }
+
+        function playerEscape() {
+            stopEngineSound();
+            Sound.playCash();
+            state.status = 'escaped'; participants[0].status = 'escaped'; spawnBotVisual(true);
+            let totalEarned = currentBet + state.currentRunGold; 
+            myWallet.money += totalEarned; updateRank(); saveData();
+            
+            ui.btn.innerText = "다시 시작"; 
+            ui.center.style.display = 'none'; 
+            ui.msg.innerText = "익절 성공! 관전 중..."; 
+            ui.msg.style.color = "#4CAF50";
+            randomChat('escape');
+        }
+
+        function crashGame() {
+            stopEngineSound();
+            Sound.playCrash();
+            state.status = 'crashed'; ui.fever.style.display = 'none'; ui.warning.style.display = 'none'; ui.heliBody.classList.remove('heli-rumble'); ui.hudTop.classList.remove('hud-glitch'); state.isSysError = false;
+            ui.heli.classList.add('crashed-anim');
+            participants.forEach(p => { if (p.status === 'playing') { p.status = 'crashed'; p.gold = 0; } });
+            
+            const crashSec = state.ms / 1000;
+            history.push({ time: crashSec });
+            if(history.length > 10) history.shift();
+            saveData();
+            updateHistoryUI();
+
+            updateLeaderboard(); 
+            
+            ui.center.style.display = 'block'; 
+            
+            if (participants[0].status === 'escaped') {
+                ui.center.querySelector('h2').innerText = "존버 성공!";
+                ui.center.querySelector('h2').style.color = "#4CAF50";
+                ui.score.style.color = "#4CAF50"; 
+                ui.btn.innerText = "다음 라운드";
+                ui.msg.innerText = "수익 확보 완료";
+            } else {
+                ui.score.innerText = "CRASHED"; 
+                ui.score.style.color = "#ff3333";
+                ui.center.querySelector('h2').innerText = "존버 실패..."; 
+                ui.center.querySelector('h2').style.color = "#ff3333"; 
+                ui.btn.innerText = "재시도";
+                if(myWallet.money < 1000) ui.msg.innerText = "파산했습니다. 초기화를 눌러주세요."; 
+                else ui.msg.innerText = `-${currentBet.toLocaleString()} G 손실...`;
+            }
+
+            randomChat('crash');
+        }
+
+        function setupParticipants() {
+            // [수정] 닉네임 반영
+            const playerName = myWallet.name || "나 (YOU)";
+            participants = [{ name: playerName, isBot: false, status: 'playing', gold: 0, targetTime: null }];
+            
+            const botNames = ['익절장인', '헬린이', '가즈아', '한강뷰', '구조대', '존버맨', '단타왕', '풀매수', '떡상기원'];
+            botNames.forEach(n => { let target = Math.random() * 30000 + 2000; participants.push({ name: n, isBot: true, status: 'playing', gold: 0, targetTime: target }); });
+        }
+        function updateLeaderboard() {
+            if (state.isSysError) { ui.lb.innerHTML = ""; for(let i=0; i<10; i++) { let div = document.createElement('div'); div.className = 'lb-row lb-glitch'; div.innerText = "오류..."; ui.lb.appendChild(div); } return; }
+            participants.sort((a, b) => b.gold - a.gold); ui.lb.innerHTML = "";
+            participants.forEach(p => {
+                let div = document.createElement('div'); div.className = 'lb-row'; let stClass = ''; let stIcon = '🚁';
+                if (p.status === 'escaped') { stClass = 'lb-escaped'; stIcon = '✅'; } else if (p.status === 'crashed') { stClass = 'lb-dead'; stIcon = '💀'; }
+                if (!p.isBot) stClass += ' lb-me';
+                div.innerHTML = `<span class="${stClass}">${p.name}</span><span>${stIcon} ${p.gold.toLocaleString()}</span>`; ui.lb.appendChild(div);
+            });
+        }
+        function spawnWarningEffect() { for(let i=0; i<3; i++) { let s = document.createElement('div'); s.className = 'smoke'; s.style.left = (130 + Math.random()*20) + "px"; s.style.top = (parseInt(ui.heli.style.top) + Math.random()*10) + "px"; ui.dynamic.appendChild(s); setTimeout(() => s.remove(), 800); } for(let i=0; i<5; i++) { let sp = document.createElement('div'); sp.className = 'spark'; sp.style.left = (140 + Math.random()*10) + "px"; sp.style.top = (parseInt(ui.heli.style.top) + 5) + "px"; sp.style.setProperty('--tx', (Math.random()*100 - 50) + 'px'); sp.style.setProperty('--ty', (Math.random()*100 - 50) + 'px'); ui.dynamic.appendChild(sp); setTimeout(() => sp.remove(), 500); } }
+        function showHudWarning() { ui.warning.style.display = 'block'; setTimeout(() => { ui.warning.style.display = 'none'; }, 1500); }
+        function spawnBotVisual(isPlayer) { let b = document.createElement('div'); b.className = 'bot'; let p = document.createElement('div'); p.className = 'parachute'; b.appendChild(p); if (isPlayer) b.classList.add('player-chute'); ui.dynamic.appendChild(b); setTimeout(() => b.remove(), 3000); }
+        function resetGame() { 
+            state.status = 'ready'; ui.btn.innerText = "게임 시작"; ui.center.querySelector('h2').innerText = "존버콥터"; ui.center.querySelector('h2').style.color = "white"; ui.score.innerText = "0 G"; ui.score.style.color = "#ffd700"; ui.timer.innerText = "00.00s"; ui.heli.style.transform = "rotate(0deg)"; ui.msg.innerText = "비행 준비 완료"; ui.msg.style.color = "#ccc"; ui.warning.style.display = 'none'; ui.hudTop.classList.remove('hud-glitch'); state.isSysError = false; ui.chat.innerHTML=''; 
+            ui.frame.style.background = "#4fa4b8"; ui.stars.classList.remove('show-stars'); ui.clouds.style.opacity = 0.8; ui.ground.style.opacity = 1;
+        }
+    </script>
+</body>
+</html>

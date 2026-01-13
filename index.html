@@ -278,7 +278,7 @@
         function updateEnginePitch(speed) { if(engineOsc && audioCtx) { const targetFreq = 50 + (speed / 10); engineOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.1); } }
         function stopEngineSound() { if(engineOsc && audioCtx) { engineGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); engineOsc.stop(audioCtx.currentTime + 0.5); engineOsc = null; } }
 
-        const CONFIG = { baseGoldRate: 0.2, maxSpeed: 1200, startMoney: 100000 }; 
+        const CONFIG = { baseGoldRate: 0.2, maxSpeed: 1200, startMoney: 5000 }; 
         let currentBet = 1000; let betMultiplier = 1; 
 
         const SKINS = [ { id: 'default', name: '기본 레드', price: 0, color: '#e74c3c' }, { id: 'military', name: '밀리터리', price: 50000, color: '#556B2F', class: 'skin-military' }, { id: 'marine', name: '마린 블루', price: 100000, color: '#00BFFF', class: 'skin-marine' }, { id: 'gold', name: '황금 헬기', price: 500000, color: '#FFD700', class: 'skin-gold' } ];
@@ -400,3 +400,4 @@
     </script>
 </body>
 </html>
+

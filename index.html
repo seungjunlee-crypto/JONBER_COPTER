@@ -3,175 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>존버콥터 : MARS EDITION (V6.6 MOBILE)</title>
+    <title>존버콥터 : LANDSCAPE (V6.6.3)</title>
     <style>
         /* === 1. 기본 설정 === */
         @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Press+Start+2P&family=Noto+Sans+KR:wght@400;700&display=swap');
 
         body {
-            margin: 0; display: flex; justify-content: center; align-items: center;
-            height: 100vh; background: #050505; image-rendering: pixelated;
-            font-family: 'Press Start 2P', cursive; overflow: hidden; user-select: none;
-            touch-action: manipulation; /* 모바일 더블탭 줌 방지 */
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            background: #000; overflow: hidden; user-select: none;
+            font-family: 'Press Start 2P', cursive;
+            touch-action: none;
         }
 
-        /* === 2. 레이아웃 & 배경 === */
-        .main-container { display: flex; gap: 20px; align-items: flex-start; }
+        /* === 2. 메인 컨테이너 === */
+        .main-container {
+            position: relative; width: 100%; height: 100%;
+            background: #111; overflow: hidden;
+        }
 
         .game-frame {
-            position: relative; width: 700px; height: 400px;
-            border: 4px solid #fff; border-radius: 12px; overflow: hidden;
-            box-shadow: 0 0 50px rgba(0, 255, 255, 0.2);
-            /* 배경: 화성 -> 우주 -> 도심 */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, 
                 #4a0000 0%, #200505 20%, #000000 40%, #000000 70%, #1a0b2e 90%, #2c003e 100%
             );
             background-size: 100% 400%; background-position: center bottom;
-            cursor: pointer; /* 클릭 가능함을 표시 */
+            transition: background-position 0.1s linear;
         }
 
-        /* 별 효과 */
-        .star-field { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 2s; }
-        .stars-1 { width: 1px; height: 1px; background: transparent; box-shadow: 10px 10px #FFF, 50px 80px #FFF, 120px 200px #FFF, 200px 300px #FFF, 300px 50px #FFF, 450px 150px #FFF, 600px 350px #FFF, 150px 10px #FFF, 600px 100px #FFF, 50px 350px #FFF, 350px 350px #FFF, 250px 250px #FFF; animation: fly-stars 20s linear infinite; }
-        .stars-2 { width: 2px; height: 2px; background: transparent; box-shadow: 80px 50px #aaa, 200px 250px #aaa, 400px 100px #aaa, 550px 300px #aaa, 100px 350px #aaa, 650px 50px #aaa; animation: fly-stars 10s linear infinite; }
-        .stars-3 { width: 3px; height: 3px; background: transparent; box-shadow: 300px 100px #888, 50px 200px #888, 600px 300px #888; animation: fly-stars 5s linear infinite; }
-        @keyframes fly-stars { from { transform: translateY(-400px); } to { transform: translateY(400px); } }
+        /* === 3. 배경 오브젝트 === */
+        .star-field { position: absolute; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 2s; }
+        .stars-1 { width: 1px; height: 1px; box-shadow: 10vw 10vh #FFF, 30vw 40vh #FFF, 50vw 80vh #FFF, 70vw 20vh #FFF, 90vw 60vh #FFF; animation: fly-stars 20s linear infinite; }
+        .stars-2 { width: 2px; height: 2px; box-shadow: 20vw 50vh #aaa, 60vw 10vh #aaa, 80vw 70vh #aaa; animation: fly-stars 10s linear infinite; }
+        .stars-3 { width: 3px; height: 3px; box-shadow: 40vw 30vh #888, 10vw 90vh #888; animation: fly-stars 5s linear infinite; }
+        @keyframes fly-stars { from { transform: translateY(-100vh); } to { transform: translateY(100vh); } }
+        
+        .mars-fog { position: absolute; top: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(to bottom, rgba(255, 50, 0, 0.3), transparent); opacity: 0; transition: opacity 3s; pointer-events: none; z-index: 5; }
 
-        .mars-fog { position: absolute; top: 0; left: 0; width: 100%; height: 40%; background: linear-gradient(to bottom, rgba(255, 50, 0, 0.3), transparent); opacity: 0; transition: opacity 3s; pointer-events: none; z-index: 5; }
-
-        .side-panel { width: 240px; height: 400px; background: #1a1a1a; border: 4px solid #fff; border-radius: 12px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; color: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
-
-        /* === 3. 헬기 === */
+        /* === 4. 헬기 === */
         :root { --heli-color: #e74c3c; --heli-shadow: #c0392b; }
         .skin-military { --heli-color: #556B2F; --heli-shadow: #3e4f20; }
         .skin-marine { --heli-color: #00BFFF; --heli-shadow: #0088cc; }
         .skin-gold { --heli-color: #FFD700; --heli-shadow: #DAA520; filter: drop-shadow(0 0 5px gold); }
 
-        .heli-wrapper { position: absolute; left: 50%; margin-left: -25px; top: 150px; transition: top 0.1s; z-index: 20; width: 50px; pointer-events: none; }
+        .heli-wrapper { 
+            position: absolute; 
+            left: 50%; top: 50%; 
+            transform: translate(-50%, -50%);
+            z-index: 20; width: 60px; height: 30px; 
+        }
         .pixel-heli {
-            width: 50px; height: 26px; background: var(--heli-color);
-            border-radius: 6px 12px 12px 6px;
-            box-shadow: 6px 0 0 var(--heli-shadow), -10px 5px 0 #444, 16px 5px 0 #8ecae6; 
+            width: 100%; height: 100%; background: var(--heli-color);
+            border-radius: 5px 10px 10px 5px;
+            box-shadow: 8px 0 0 var(--heli-shadow), -10px 5px 0 #444, 15px 5px 0 #8ecae6; 
             position: relative; transition: background 0.3s;
         }
-        .pixel-heli::before { content: ''; position: absolute; top: -10px; left: 10px; width: 44px; height: 5px; background: #eee; border-radius: 2px; animation: rotor linear infinite; animation-duration: calc(0.1s / var(--speed-factor, 1)); }
-        .pixel-heli::after { content: ''; position: absolute; bottom: -8px; left: 6px; width: 40px; height: 5px; border-bottom: 4px solid #444; border-left: 4px solid transparent; border-right: 4px solid transparent; }
+        .pixel-heli::before { content: ''; position: absolute; top: -10px; left: 5px; width: 50px; height: 5px; background: #eee; border-radius: 2px; animation: rotor linear infinite; animation-duration: calc(0.1s / var(--speed-factor, 1)); }
+        .pixel-heli::after { content: ''; position: absolute; bottom: -8px; left: 5px; width: 45px; height: 5px; border-bottom: 4px solid #444; border-left: 4px solid transparent; border-right: 4px solid transparent; }
+        @keyframes rotor { 0% { transform: scaleX(1); opacity:1; } 50% { transform: scaleX(0.2); opacity:0.6; } 100% { transform: scaleX(1); opacity:1; } }
 
-        /* === 4. 채팅 === */
-        .chat-container { position: absolute; bottom: 110px; left: 10px; width: 250px; height: 150px; overflow: hidden; pointer-events: none; display: flex; flex-direction: column-reverse; z-index: 50; }
-        .chat-msg { background: rgba(0, 0, 0, 0.6); color: #fff; padding: 4px 8px; margin-top: 4px; border-radius: 4px; font-family: 'Noto Sans KR', sans-serif; font-size: 11px; text-shadow: 1px 1px 0 #000; animation: fadeChat 5s forwards; }
+        /* === 5. HUD UI (위치 수정됨) === */
+        
+        /* 뉴스 티커: 최상단 고정 (0px) */
+        .news-ticker-wrap { position: absolute; top: 0; left: 0; width: 100%; height: 24px; background: rgba(0, 0, 0, 0.8); z-index: 90; overflow: hidden; white-space: nowrap; border-bottom: 1px solid #444; }
+        .news-ticker-content { display: inline-block; padding-left: 100%; animation: ticker 20s linear infinite; color: #00ff00; font-family: 'Noto Sans KR'; font-size: 12px; line-height: 24px; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+        /* [수정] 족보 (History): 뉴스 바로 아래 */
+        .history-bar { 
+            position: absolute; top: 30px; left: 20px; 
+            display: flex; gap: 5px; z-index: 90; 
+        }
+        .history-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
+        .h-blue { background: #3498db; } .h-green { background: #2ecc71; } .h-red { background: #e74c3c; } .h-gold { background: #f1c40f; box-shadow: 0 0 5px #f1c40f; }
+
+        /* [수정] 내 정보 (계급/돈): 족보 아래로 내림 (겹침 해결) */
+        .hud-profile {
+            position: absolute; top: 60px; left: 20px; z-index: 100;
+            background: rgba(0, 0, 0, 0.6); padding: 8px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3);
+            display: flex; flex-direction: column; align-items: flex-start;
+        }
+        .my-rank-badge { font-size: 12px; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px; color: #000; font-weight: bold; }
+        .my-money { color: #4caf50; font-weight: bold; font-size: 16px; text-shadow: 1px 1px 0 #000; }
+
+        /* 점수 & 타이머 (우측 상단) */
+        .hud-score {
+            position: absolute; top: 35px; right: 20px; z-index: 100; text-align: right;
+        }
+        #score-box { font-family: 'Black Ops One'; font-size: 32px; color: #ffd700; text-shadow: 2px 2px 0 #000; }
+        #timer-box { font-size: 16px; color: #fff; text-shadow: 1px 1px 0 #000; margin-top: 5px; }
+
+        /* 리더보드 (우측 중단) */
+        .hud-leaderboard {
+            position: absolute; top: 100px; right: 20px; width: 180px; max-height: 50vh;
+            overflow-y: auto; pointer-events: none; z-index: 90; font-family: 'Noto Sans KR'; font-size: 10px;
+        }
+        .lb-row { display: flex; justify-content: space-between; margin-bottom: 2px; padding: 3px 5px; background: rgba(0,0,0,0.4); border-radius: 4px; color: #fff; }
+        .lb-me { color: #ffd700; font-weight: bold; border: 1px solid rgba(255,215,0,0.5); }
+        .bonus-tag { font-size: 8px; padding: 1px 3px; border-radius: 2px; margin-left: 3px; font-weight: bold; color:#000; }
+        .bonus-1 { background: #ffd700; } .bonus-2 { background: #c0c0c0; } .bonus-3 { background: #cd7f32; }
+
+        /* 엔진 경고 텍스트 */
+        .hud-warning { 
+            position: absolute; top: 25%; left: 50%; transform: translateX(-50%); 
+            background: rgba(255, 0, 0, 0.2); border: 2px solid #ff3333; color: #ff3333; 
+            padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 16px; 
+            display: none; z-index: 200; animation: blink 0.15s infinite alternate; font-family: 'Noto Sans KR'; 
+        }
+        @keyframes blink { from { opacity: 1; } to { opacity: 0.3; } }
+
+        /* 채팅 (좌측 하단) */
+        .chat-container { 
+            position: absolute; bottom: 20px; left: 20px; 
+            width: 300px; height: 120px; overflow: hidden; 
+            pointer-events: none; display: flex; flex-direction: column-reverse; z-index: 90; 
+        }
+        .chat-msg { background: rgba(0, 0, 0, 0.6); color: #fff; padding: 4px 8px; margin-top: 4px; border-radius: 4px; font-family: 'Noto Sans KR'; font-size: 11px; animation: fadeChat 5s forwards; }
         .chat-name { font-weight: bold; color: #ffd700; margin-right: 5px; }
         @keyframes fadeChat { 0% { opacity:0; transform: translateY(10px); } 10% { opacity:1; transform: translateY(0); } 90% { opacity:1; } 100% { opacity:0; } }
 
-        /* === 5. 뉴스 티커 === */
-        .news-ticker-wrap { position: absolute; top: 10px; left: 0; width: 100%; height: 24px; background: rgba(0, 0, 0, 0.7); border-top: 1px solid #444; border-bottom: 1px solid #444; overflow: hidden; white-space: nowrap; z-index: 90; display: none; }
-        .news-ticker-content { display: inline-block; padding-left: 100%; animation: ticker 15s linear infinite; color: #00ff00; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; line-height: 24px; }
-        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+        /* 중앙 하단 메시지 */
+        .status-msg { position: absolute; bottom: 30px; width: 100%; text-align: center; font-size: 14px; color: #ccc; text-shadow: 1px 1px 0 #000; font-family: 'Noto Sans KR'; z-index: 100; pointer-events: none; }
 
-        /* === 6. UI === */
+        /* === 6. 메뉴 팝업 === */
         .center-msg { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            text-align: center; pointer-events: auto; background: rgba(0,0,0,0.9); 
-            padding: 15px 20px; border-radius: 10px; border: 2px solid #fff; 
-            width: 260px; z-index: 200; box-shadow: 0 0 30px rgba(0,0,0,0.8); 
+            text-align: center; pointer-events: auto; background: rgba(0,0,0,0.95); 
+            padding: 15px 30px; border-radius: 12px; border: 2px solid #fff; 
+            width: 450px; 
+            z-index: 200; box-shadow: 0 0 40px rgba(0,0,0,0.8); 
+            display: flex; flex-direction: column; gap: 10px;
         }
-
-        .bet-container { display: flex; gap: 5px; margin-bottom: 10px; width: 100%; }
-        .bet-btn { flex: 1; padding: 8px 0; font-family: 'Noto Sans KR', sans-serif; font-weight: bold; font-size: 11px; cursor: pointer; border: 2px solid #555; background: #222; color: #aaa; border-radius: 4px; transition: 0.2s; }
-        .bet-btn:hover { background: #333; }
+        .center-msg h2 { color: white; margin: 0; font-size: 20px; }
+        .sub-title { font-size: 10px; color: #aaa; font-family:'Noto Sans KR'; margin-bottom: 5px;}
+        
+        .menu-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; }
+        #nickname-input { flex: 1; padding: 10px; background: #333; border: 2px solid #555; color: #fff; text-align: center; border-radius: 4px; font-size: 14px; }
+        
+        .bet-container { display: flex; gap: 8px; width: 100%; margin: 5px 0; }
+        .bet-btn { 
+            flex: 1; padding: 10px 0; font-family: 'Noto Sans KR'; font-weight: bold; font-size: 11px; 
+            cursor: pointer; border: 2px solid #555; background: #222; color: #aaa; border-radius: 6px; transition: 0.2s; 
+        }
         .bet-btn.active { border-color: #ffd700; color: #000; background: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-        .input-group { margin-bottom: 10px; text-align: left; }
-        .input-label { font-size: 10px; color: #aaa; margin-bottom: 3px; font-family: 'Noto Sans KR'; display: block; }
-        #nickname-input { width: 100%; padding: 8px; box-sizing: border-box; background: #333; border: 2px solid #555; color: #fff; font-family: 'Noto Sans KR', sans-serif; font-weight: bold; text-align: center; border-radius: 4px; font-size: 13px; outline: none; transition: 0.2s; }
-        #nickname-input:focus { border-color: #4CAF50; background: #222; }
         
-        button { font-family: 'Noto Sans KR', sans-serif; }
-        #start-btn { background: #4CAF50; color: white; border: none; padding: 12px 0; font-weight:bold; font-size: 14px; margin-bottom: 5px; cursor: pointer; box-shadow: 0 4px 0 #2E7D32; border-radius: 4px; display: block; width: 100%; }
-        #start-btn:active { box-shadow: 0 2px 0 #2E7D32; transform: translateY(3px); }
-        #shop-btn { background: #E91E63; color: white; border: none; padding: 8px; font-size: 11px; cursor: pointer; border-radius: 4px; width: 100%; margin-bottom: 3px; }
-        #reset-btn { background: #555; color: #ccc; border: none; padding: 8px; font-size: 11px; cursor: pointer; border-radius: 4px; width: 100%;}
-        
-        .history-bar { position: absolute; top: 40px; right: 10px; display: flex; gap: 5px; z-index: 150; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 20px; }
-        .history-dot { width: 12px; height: 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.3); transition: transform 0.2s; }
-        .history-dot:hover { transform: scale(1.5); }
-        .h-blue { background: #3498db; box-shadow: 0 0 5px #3498db; }
-        .h-green { background: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
-        .h-red { background: #e74c3c; box-shadow: 0 0 5px #e74c3c; }
-        .h-gold { background: #f1c40f; box-shadow: 0 0 8px #f1c40f; border: 1px solid #fff;}
+        .action-row { display: flex; gap: 10px; width: 100%; }
+        #start-btn { flex: 2; background: #4CAF50; color: white; border: none; padding: 12px; font-weight:bold; font-size: 16px; border-radius: 6px; cursor: pointer; }
+        .small-btn { flex: 1; background: #555; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family:'Noto Sans KR';}
+        #shop-btn { background: #E91E63; }
 
-        .shop-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        .shop-title { font-size: 16px; color: #ffd700; margin-bottom: 15px; font-family: 'Press Start 2P'; }
-        .skin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .skin-card { background: #333; border: 2px solid #555; padding: 8px; border-radius: 8px; text-align: center; cursor: pointer; width: 110px; transition: 0.2s; }
-        .skin-card.owned { border-color: #4CAF50; } .skin-card.equipped { border-color: #ffd700; background: #443300; }
-        .skin-preview { width: 40px; height: 20px; margin: 8px auto; display: block; }
-        .skin-btn { margin-top: 3px; padding: 3px; font-size: 10px; cursor: pointer; width: 100%; border:none;}
-        .btn-buy { background: #E91E63; color: white; } .btn-equip { background: #2196F3; color: white; }
-        .btn-close { margin-top: 15px; background: #555; color: white; border: none; padding: 8px 15px; cursor: pointer; font-size: 12px;}
+        /* 상점 모달 */
+        .shop-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .shop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; } 
+        .skin-card { background: #333; border: 2px solid #555; padding: 10px; border-radius: 8px; text-align: center; width: 100px; cursor: pointer; }
+        .skin-preview { width: 50px; height: 25px; margin: 10px auto; display: block; }
+        .btn-close { margin-top: 20px; background: #555; color: white; border: none; padding: 10px 20px; cursor: pointer; }
 
-        .my-status { border-bottom: 2px solid #555; padding-bottom: 15px; margin-bottom: 15px; text-align: center; }
-        .rank-title { font-size: 11px; color: #aaa; margin-top: 5px; display: block; }
-        .rank-badge { display: inline-block; padding: 5px 10px; background: #ffd700; color: #000; font-weight: bold; border-radius: 4px; font-size: 12px; margin-bottom: 2px; }
-        .my-money { font-size: 14px; color: #4caf50; text-shadow: 1px 1px 0 #000; margin-top: 5px; font-weight: bold; }
+        /* === 7. 이펙트 및 오브젝트 === */
+        .fever-overlay { position: absolute; top:0; left:0; width:100%; height:100%; box-shadow: inset 0 0 100px 30px rgba(255, 215, 0, 0.5); pointer-events: none; display: none; z-index: 90; animation: pulseGold 1s infinite; }
         
-        .side-title { color: #aaa; text-align: center; margin-bottom: 10px; font-size: 12px; font-family: 'Noto Sans KR', sans-serif;}
-        .leaderboard-list { flex-grow: 1; overflow-y: auto; }
-        .lb-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 10px; color: #fff; padding-bottom: 5px; border-bottom: 1px dashed #333; font-family: 'Noto Sans KR', sans-serif; align-items: center; }
-        .lb-me { color: #ffd700; font-weight: bold; background: rgba(255, 215, 0, 0.1); }
-        .lb-dead { text-decoration: line-through; color: #ff5555; opacity: 0.5; }
-        .lb-escaped { color: #4caf50; font-weight: bold;}
-        .lb-glitch { color: #ff3333; animation: blink 0.1s infinite; }
-        .bonus-tag { font-size: 9px; padding: 2px 4px; border-radius: 3px; margin-left: 5px; font-weight: bold; }
-        .bonus-1 { background: #ffd700; color: #000; }
-        .bonus-2 { background: #c0c0c0; color: #000; }
-        .bonus-3 { background: #cd7f32; color: #000; }
-
-        @keyframes rumble { 0% { transform: translate(0, 0); } 25% { transform: translate(-2px, 2px); } 50% { transform: translate(2px, -2px); } 75% { transform: translate(-2px, -2px); } 100% { transform: translate(0, 0); } }
-        @keyframes rotor { 0% { transform: scaleX(1); opacity:1; } 50% { transform: scaleX(0.2); opacity:0.6; } 100% { transform: scaleX(1); opacity:1; } }
-        
-        .bot { position: absolute; width: 8px; height: 14px; background: #fff; box-shadow: 0 -6px 0 #ffcc80; z-index: 15; animation: botDrop 3s forwards; }
-        .parachute { position: absolute; top: -25px; left: -12px; width: 32px; height: 16px; background: #eee; border-radius: 32px 32px 0 0; transform: scale(0); animation: openChute 3s 0.3s forwards; border-top: 2px solid #ccc; }
-        .parachute::before, .parachute::after { content: ''; position: absolute; bottom: -8px; width: 1px; height: 12px; background: #fff; }
-        .parachute::before { left: 4px; transform: rotate(20deg); } .parachute::after { right: 4px; transform: rotate(-20deg); }
-        .player-chute .bot { background: #ffd700; box-shadow: 0 -6px 0 #fff; }
-        .player-chute .parachute { background: #ffd700; border-top: 2px solid #ffcc00; }
-        .player-chute .parachute::before, .player-chute .parachute::after { background: #ffd700; }
-        
-        @keyframes botDrop { 
-            0% { opacity: 1; left: 50%; top: var(--heli-y); margin-left: -4px; } 
-            100% { left: -50px; top: 450px; opacity: 1; margin-left: 0; } 
+        /* [수정] 경고 이펙트 사이즈 키움 */
+        .danger-overlay { 
+            position: absolute; top:0; left:0; width:100%; height:100%; 
+            box-shadow: inset 0 0 15vw 5vw rgba(255, 0, 0, 0.6); /* 더 두껍게 */
+            pointer-events: none; display: none; z-index: 90; 
+            animation: pulseRed 1s infinite; 
         }
-        @keyframes openChute { 20% { transform: scale(1); } 100% { transform: scale(1); } }
+        @keyframes pulseGold { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @keyframes pulseRed { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        
         .smoke { position: absolute; width: 15px; height: 15px; background: #ddd; border-radius: 50%; opacity: 0.8; animation: smokeOut 0.8s forwards; }
-        @keyframes smokeOut { to { transform: translate(-150px, -50px) scale(3); opacity: 0; } }
+        @keyframes smokeOut { to { transform: translate(-100px, -50px) scale(3); opacity: 0; } }
         .spark { position: absolute; width: 6px; height: 6px; background: #ffcc00; border-radius: 50%; box-shadow: 0 0 5px #ff5500; animation: sparkOut 0.5s forwards ease-out; }
         @keyframes sparkOut { to { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
         
-        .crashed-anim { animation: crashDown 1s forwards !important; }
-        @keyframes crashDown { 0% { transform: rotate(0deg); } 100% { transform: rotate(500deg); top: 500px; } }
-
-        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; }
-        .top-info { text-align: left; transition: opacity 0.2s; margin-top: 25px; }
-        #score-box { font-family: 'Black Ops One', cursive; font-size: 36px; color: #ffd700; text-shadow: 3px 3px 0 #000; }
-        #timer-box { font-size: 20px; color: #fff; text-shadow: 2px 2px 0 #000; margin-top: 5px;}
-        .hud-glitch { animation: glitchAnim 0.1s infinite; color: #ff3333 !important; text-shadow: 2px 0 #fff, -2px 0 #000 !important; }
-        @keyframes glitchAnim { 0% { opacity: 1; } 20% { opacity: 0.8; transform: skewX(-5deg); } 40% { opacity: 1; transform: skewX(5deg); } 60% { opacity: 0.5; } 80% { opacity: 0.9; } 100% { opacity: 1; } }
-        .hud-warning { position: absolute; top: 50px; right: 20px; background: rgba(255, 0, 0, 0.2); border: 2px solid #ff3333; color: #ff3333; padding: 10px 15px; border-radius: 4px; font-weight: bold; font-size: 14px; text-align: center; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); display: none; z-index: 200; animation: blink 0.15s infinite alternate; font-family: 'Noto Sans KR', sans-serif;}
-        @keyframes blink { from { opacity: 1; } to { opacity: 0.3; } }
-        .bottom-info { display: flex; justify-content: space-between; align-items: flex-end; }
-        #speed-box { font-size: 24px; color: #fff; text-shadow: 2px 2px 0 #000; font-weight: bold; }
-        #status-msg { font-size: 14px; color: #ccc; text-shadow: 1px 1px 0 #000; font-family: 'Noto Sans KR', sans-serif;}
-        
-        .danger-overlay { position: absolute; top:0; left:0; width:100%; height:100%; box-shadow: inset 0 0 100px 30px rgba(255, 0, 0, 0.6); pointer-events: none; display: none; z-index: 90; animation: pulseRed 1s infinite; }
-        @keyframes pulseRed { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-        
-        .fever-overlay { 
-            position: absolute; top:0; left:0; width:100%; height:100%; 
-            box-shadow: inset 0 0 100px 30px rgba(255, 215, 0, 0.5); 
-            pointer-events: none; display: none; z-index: 90;
-            animation: pulseGold 1s infinite;
+        .bot { position: absolute; width: 8px; height: 14px; background: #fff; box-shadow: 0 -6px 0 #ffcc80; z-index: 15; animation: botDrop 3s forwards; }
+        .parachute { position: absolute; top: -25px; left: -12px; width: 32px; height: 16px; background: #eee; border-radius: 32px 32px 0 0; transform: scale(0); animation: openChute 3s 0.3s forwards; border-top: 2px solid #ccc; }
+        @keyframes botDrop { 
+            0% { opacity: 1; left: 50%; top: 50%; margin-left: -4px; } 
+            100% { left: 20%; top: 120%; opacity: 1; } /* 왼쪽 아래로 떨어짐 */
         }
-        @keyframes pulseGold { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @keyframes openChute { 20% { transform: scale(1); } 100% { transform: scale(1); } }
+        
+        .player-chute .bot { background: #ffd700; box-shadow: 0 -6px 0 #fff; }
+        .player-chute .parachute { background: #ffd700; border-top: 2px solid #ffcc00; }
+
+        .crashed-anim { animation: crashDown 2s forwards !important; }
+        @keyframes crashDown { 0% { transform: rotate(0deg); } 100% { transform: rotate(720deg); top: 120%; } }
     </style>
 </head>
 <body>
@@ -186,72 +204,61 @@
             <div class="star-field stars-2" id="stars2"></div>
             <div class="star-field stars-3" id="stars3"></div>
             <div class="mars-fog" id="marsFog"></div>
-
             <div class="danger-overlay" id="danger-effect"></div>
             <div class="fever-overlay" id="fever-filter"></div>
             <div id="dynamic-layer"></div>
             
-            <div class="history-bar" id="history-box"></div>
+            <div class="hud-warning" id="warning-box">WARNING<br>엔진 과열</div>
 
             <div class="heli-wrapper" id="heli">
                 <div class="pixel-heli" id="heli-body"></div>
             </div>
 
+            <div class="history-bar" id="history-box"></div>
+
+            <div class="hud-profile">
+                <span class="my-rank-badge" id="my-rank-badge">🐣 코린이</span>
+                <span class="my-money" id="my-money-display">10,000 G</span>
+            </div>
+            
+            <div class="hud-score">
+                <div id="score-box">0 G</div>
+                <div id="timer-box">00.00s</div>
+            </div>
+
+            <div class="hud-leaderboard" id="lb-content"></div>
             <div class="chat-container" id="chat-box"></div>
+            <div class="status-msg" id="status-msg">화면을 터치하여 비행 시작</div>
 
-            <div class="ui-layer">
-                <div class="top-info" id="hud-top">
-                    <div id="score-box">0 G</div>
-                    <div id="timer-box">00.00s</div>
+            <div class="center-msg" id="center-ui">
+                <div>
+                    <h2>JONBER COPTER</h2>
+                    <div class="sub-title">To the Mars : 생존 배틀</div>
+                </div>
+                
+                <div class="menu-row">
+                    <input type="text" id="nickname-input" placeholder="닉네임 입력 (최대 8자)" maxlength="8">
                 </div>
 
-                <div id="warning-box" class="hud-warning">경고<br>엔진 결함 발생</div>
-
-                <div class="center-msg" id="center-ui">
-                    <h2 style="color:white; margin-bottom:5px; font-size: 16px;">존버콥터</h2>
-                    <div style="font-size:10px; color:#aaa; margin-bottom:12px; font-family:'Noto Sans KR'">To the Mars : 생존 배틀</div>
-                    
-                    <div class="input-group">
-                        <span class="input-label">파일럿 닉네임</span>
-                        <input type="text" id="nickname-input" placeholder="이름 입력" maxlength="8">
-                    </div>
-
-                    <div style="color: #aaa; font-size: 9px; margin-bottom: 3px; font-family: 'Noto Sans KR';">배팅 금액:</div>
-                    <div class="bet-container">
-                        <button class="bet-btn active" onclick="setBet(1000, 1, this)">1천원<br>(x1)</button>
-                        <button class="bet-btn" onclick="setBet(5000, 5, this)">5천원<br>(x5)</button>
-                        <button class="bet-btn" onclick="setBet(20000, 20, this)">2만원<br>(x20)</button>
-                    </div>
-
-                    <div style="margin-bottom: 10px; color: #ffd700; font-size: 10px; font-family: 'Noto Sans KR'; font-weight:bold;" id="entry-fee-text">참가비: 1,000 G</div>
-                    
-                    <button id="start-btn">게임 시작</button>
-                    <button id="shop-btn" onclick="openShop()">🛒 상점</button>
-                    <button id="reset-btn" onclick="resetData()">🔄 데이터 초기화</button>
+                <div style="font-size: 10px; color: #aaa; text-align: left; width:100%;">배팅 금액 선택:</div>
+                <div class="bet-container">
+                    <button class="bet-btn active" onclick="setBet(1000, 1, this)">1천원<br>(x1)</button>
+                    <button class="bet-btn" onclick="setBet(10000, 2, this)">1만원<br>(x2)</button>
+                    <button class="bet-btn" onclick="setBet(30000, 5, this)">3만원<br>(x5)</button>
                 </div>
-
-                <div class="bottom-info">
-                    <div id="speed-box">0 km/h</div>
-                    <div id="status-msg">비행 준비 완료</div>
+                
+                <div class="action-row">
+                    <button id="start-btn">GAME START</button>
+                    <button id="shop-btn" class="small-btn" onclick="openShop()">🛒 상점</button>
+                    <button id="reset-btn" class="small-btn" onclick="resetData()">🔄 초기화</button>
                 </div>
             </div>
             
             <div class="shop-modal" id="shop-ui">
                 <div class="shop-title">HELICOPTER SHOP</div>
-                <div class="skin-grid" id="skin-list"></div>
+                <div class="shop-grid" id="skin-list"></div>
                 <button class="btn-close" onclick="closeShop()">닫기</button>
             </div>
-        </div>
-
-        <div class="side-panel">
-            <div class="my-status">
-                <div class="side-title">내 지갑</div>
-                <div class="rank-badge" id="my-rank-badge">CITIZEN</div>
-                <div class="rank-title" id="my-rank-title">일반 시민</div>
-                <div class="my-money" id="my-money-display">10,000 G</div>
-            </div>
-            <div class="side-title">🏆 실시간 랭킹 🏆</div>
-            <div class="leaderboard-list" id="lb-content"></div>
         </div>
     </div>
 
@@ -271,66 +278,56 @@
         function updateEnginePitch(speed) { if(engineOsc && audioCtx) { const targetFreq = 50 + (speed / 10); engineOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.1); } }
         function stopEngineSound() { if(engineOsc && audioCtx) { engineGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); engineOsc.stop(audioCtx.currentTime + 0.5); engineOsc = null; } }
 
-        // [수정] 배팅 배율 조정
-        const CONFIG = { baseGoldRate: 0.2, maxSpeed: 1200, startMoney: 10000 };
-        let currentBet = 1000; let betMultiplier = 1;
-        const SKINS = [ { id: 'default', name: '기본 레드', price: 0, color: '#e74c3c' }, { id: 'military', name: '밀리터리', price: 10000, color: '#556B2F', class: 'skin-military' }, { id: 'marine', name: '마린 블루', price: 30000, color: '#00BFFF', class: 'skin-marine' }, { id: 'gold', name: '황금 헬기', price: 100000, color: '#FFD700', class: 'skin-gold' } ];
-        const RANKS = [ { limit: 5000, name: "흑우", id: "BEGGAR", color: "#aaa", icon: "🐮" }, { limit: 50000, name: "코린이", id: "NEWBIE", color: "#4CAF50", icon: "👶" }, { limit: 100000, name: "야수의 심장", id: "BEAST", color: "#03A9F4", icon: "🦁" }, { limit: 500000, name: "세력", id: "WHALE", color: "#E91E63", icon: "🐋" }, { limit: Infinity, name: "졸업생", id: "LEGEND", color: "#FFD700", icon: "🎓" } ];
+        const CONFIG = { baseGoldRate: 0.2, maxSpeed: 1200, startMoney: 100000 }; 
+        let currentBet = 1000; let betMultiplier = 1; 
+
+        const SKINS = [ { id: 'default', name: '기본 레드', price: 0, color: '#e74c3c' }, { id: 'military', name: '밀리터리', price: 50000, color: '#556B2F', class: 'skin-military' }, { id: 'marine', name: '마린 블루', price: 100000, color: '#00BFFF', class: 'skin-marine' }, { id: 'gold', name: '황금 헬기', price: 500000, color: '#FFD700', class: 'skin-gold' } ];
+        const RANKS = [ { limit: 50000, name: "흑우", id: "BEGGAR", color: "#aaa", icon: "🐮" }, { limit: 200000, name: "코린이", id: "NEWBIE", color: "#4CAF50", icon: "👶" }, { limit: 500000, name: "야수", id: "BEAST", color: "#03A9F4", icon: "🦁" }, { limit: 1000000, name: "세력", id: "WHALE", color: "#E91E63", icon: "🐋" }, { limit: Infinity, name: "졸업", id: "LEGEND", color: "#FFD700", icon: "🎓" } ];
         const CHAT_LOGS = { start: ["가즈아!", "이번엔 10만 간다", "탑승 완료", "영차영차", "ㄱㄱㄱ", "형 믿는다", "풀매수 때림"], fever: ["버텨!!", "아직 아냐", "돔황챠!!", "와 미쳤다", "화성 갈끄니까~", "팬티 벗고 소리질러!"], warning: ["연기 뭐야?", "짭이네 ㅋ", "ㅌㅌㅌ", "어어 점마 왜저러노", "탈출각?", "구조대 언제 옴?"], crash: ["한강물 따뜻하냐", "아 내 돈...", "주작겜 망해라", "ㅋㅋㅋㅋㅋ", "나만 아니면 돼~", "지옥 가네"], escape: ["꺼억~", "치킨값 벌었다", "수고링", "익절합니다 ^^", "안전제일", "내가 팔면 오르더라"] };
-        // [수정] 뉴스 티커 내용 추가 (20개 이상)
-        const NEWS_TITLES = [
-            "속보: 일론 머스크, 도지코인으로 화성 여행 결제 허용",
-            "속보: 비트코인 1억 돌파! 전 세계가 주목",
-            "단독: 옆집 철수, 적금 깨고 존버콥터 탑승",
-            "속보: 연준, 금리 인하 발표... 가상화폐 시장 환호",
-            "주의: 거래소 서버 불안정... 투자자들 '발동동'",
-            "날씨: 한강 수온 체크 중... 수영 금지",
-            "속보: 정부, 가상화폐 과세 유예 검토 중",
-            "속보: 알트코인 대폭락! 비명 지르는 개미들",
-            "화제: 100배 수익 인증샷 커뮤니티 도배",
-            "경고: '김치 프리미엄' 역대 최고치 경신",
-            "소문: 워렌 버핏, 몰래 비트코인 매집 중?",
-            "단독: 존버콥터, 나스닥 상장 추진 루머",
-            "속보: 유명 유튜버 '존버맨', 100억 익절 인증",
-            "화제: 잃어버린 비트코인 지갑 비번 찾았다!",
-            "속보: 해커 그룹, 거래소 공격 예고... 보안 강화",
-            "주의: 떡상 열차 출발합니다! 꽉 잡으세요",
-            "속보: 엄마한테 등짝 맞고 코인 손절한 사연 화제",
-            "단독: '돔황챠' 외치던 투자자, 알고보니 고수?",
-            "속보: 메타버스 땅값 폭등... 현실 부동산 넘나",
-            "날씨: 코인 한파 주의보... 계좌가 얼어붙음"
-        ];
+        const NEWS_TITLES = [ "속보: 일론 머스크, 도지코인으로 화성 여행 결제 허용", "속보: 비트코인 1억 돌파! 전 세계가 주목", "단독: 옆집 철수, 적금 깨고 존버콥터 탑승", "속보: 연준, 금리 인하 발표... 가상화폐 시장 환호", "주의: 거래소 서버 불안정... 투자자들 '발동동'", "날씨: 한강 수온 체크 중... 수영 금지", "속보: 정부, 가상화폐 과세 유예 검토 중", "속보: 알트코인 대폭락! 비명 지르는 개미들", "화제: 100배 수익 인증샷 커뮤니티 도배", "경고: '김치 프리미엄' 역대 최고치 경신", "소문: 워렌 버핏, 몰래 비트코인 매집 중?", "단독: 존버콥터, 나스닥 상장 추진 루머", "속보: 유명 유튜버 '존버맨', 100억 익절 인증", "화제: 잃어버린 비트코인 지갑 비번 찾았다!" ];
 
         let state = { status: 'ready', ms: 0, currentRunGold: 0, speed: 0, crashTime: 0, isFever: false, feverTime: 0, feverRate: 2, nextRateChange: 0, events: [], airPocketY: 0, isSysError: false, bgLevel: 0 };
         let myWallet = { money: CONFIG.startMoney, rank: 'NEWBIE', ownedSkins: ['default'], equippedSkin: 'default', name: '' };
         let history = []; let participants = []; let lastTimestamp = 0;
 
-        const ui = { frame: document.getElementById('game-frame'), heli: document.getElementById('heli'), heliBody: document.getElementById('heli-body'), dynamic: document.getElementById('dynamic-layer'), score: document.getElementById('score-box'), timer: document.getElementById('timer-box'), speed: document.getElementById('speed-box'), msg: document.getElementById('status-msg'), center: document.getElementById('center-ui'), btn: document.getElementById('start-btn'), lb: document.getElementById('lb-content'), fever: document.getElementById('fever-filter'), danger: document.getElementById('danger-effect'), warning: document.getElementById('warning-box'), hudTop: document.getElementById('hud-top'), myMoney: document.getElementById('my-money-display'), myRankBadge: document.getElementById('my-rank-badge'), myRankTitle: document.getElementById('my-rank-title'), chat: document.getElementById('chat-box'), shop: document.getElementById('shop-ui'), skinList: document.getElementById('skin-list'), entryText: document.getElementById('entry-fee-text'), historyBox: document.getElementById('history-box'), nameInput: document.getElementById('nickname-input'), stars1: document.getElementById('stars1'), stars2: document.getElementById('stars2'), stars3: document.getElementById('stars3'), marsFog: document.getElementById('marsFog'), newsTicker: document.getElementById('news-ticker'), newsContent: document.getElementById('news-content') };
+        const ui = { 
+            frame: document.getElementById('game-frame'), heli: document.getElementById('heli'), heliBody: document.getElementById('heli-body'), 
+            dynamic: document.getElementById('dynamic-layer'), score: document.getElementById('score-box'), timer: document.getElementById('timer-box'), 
+            msg: document.getElementById('status-msg'), center: document.getElementById('center-ui'), btn: document.getElementById('start-btn'), 
+            lb: document.getElementById('lb-content'), fever: document.getElementById('fever-filter'), danger: document.getElementById('danger-effect'), 
+            warning: document.getElementById('warning-box'), myMoney: document.getElementById('my-money-display'), myRankBadge: document.getElementById('my-rank-badge'),
+            chat: document.getElementById('chat-box'), shop: document.getElementById('shop-ui'), skinList: document.getElementById('skin-list'), 
+            historyBox: document.getElementById('history-box'), nameInput: document.getElementById('nickname-input'), 
+            stars1: document.getElementById('stars1'), stars2: document.getElementById('stars2'), stars3: document.getElementById('stars3'), marsFog: document.getElementById('marsFog'), 
+            newsTicker: document.getElementById('news-ticker'), newsContent: document.getElementById('news-content') 
+        };
         const root = document.documentElement;
 
         window.onload = () => { loadData(); applySkin(); updateHistoryUI(); startNewsTicker(); };
-        function loadData() { const saved = localStorage.getItem('heliTycoonDataV66'); if (saved) { try { const data = JSON.parse(saved); if(data.wallet) myWallet = data.wallet; if(data.history) history = data.history; } catch(e) { console.error(e); } } if(myWallet.name) ui.nameInput.value = myWallet.name; updateRank(); updateWalletUI(); }
-        function saveData() { localStorage.setItem('heliTycoonDataV66', JSON.stringify({ wallet: myWallet, history: history })); updateWalletUI(); }
-        function resetData() { if(!confirm("초기화 하시겠습니까?")) return; localStorage.removeItem('heliTycoonDataV66'); myWallet = { money: CONFIG.startMoney, rank: 'NEWBIE', ownedSkins: ['default'], equippedSkin: 'default', name: '' }; history = []; ui.nameInput.value = ''; applySkin(); saveData(); updateHistoryUI(); alert("초기화 완료!"); }
+        function loadData() { const saved = localStorage.getItem('heliTycoonDataV663'); if (saved) { try { const data = JSON.parse(saved); if(data.wallet) myWallet = data.wallet; if(data.history) history = data.history; } catch(e) {} } if(myWallet.name) ui.nameInput.value = myWallet.name; updateRank(); updateWalletUI(); }
+        function saveData() { localStorage.setItem('heliTycoonDataV663', JSON.stringify({ wallet: myWallet, history: history })); updateWalletUI(); }
+        function resetData() { if(!confirm("초기화 하시겠습니까?")) return; localStorage.removeItem('heliTycoonDataV663'); myWallet = { money: CONFIG.startMoney, rank: 'NEWBIE', ownedSkins: ['default'], equippedSkin: 'default', name: '' }; history = []; ui.nameInput.value = ''; applySkin(); saveData(); updateHistoryUI(); alert("초기화 완료!"); }
         function updateRank() { const m = myWallet.money; const r = RANKS.find(rk => m < rk.limit) || RANKS[RANKS.length-1]; myWallet.rank = r.id; }
-        function updateWalletUI() { ui.myMoney.innerText = myWallet.money.toLocaleString() + " G"; const r = RANKS.find(rk => rk.id === myWallet.rank); ui.myRankBadge.innerText = r.icon + " " + r.id; ui.myRankBadge.style.background = r.color; ui.myRankTitle.innerText = r.name; }
+        function updateWalletUI() { ui.myMoney.innerText = myWallet.money.toLocaleString() + " G"; const r = RANKS.find(rk => rk.id === myWallet.rank); ui.myRankBadge.innerText = r.icon + " " + r.name; ui.myRankBadge.style.background = r.color; }
         function updateHistoryUI() { ui.historyBox.innerHTML = ''; history.forEach(res => { const dot = document.createElement('div'); let colorClass = 'h-blue'; if (res.time < 2) colorClass = 'h-blue'; else if (res.time < 10) colorClass = 'h-green'; else if (res.time < 25) colorClass = 'h-red'; else colorClass = 'h-gold'; dot.className = `history-dot ${colorClass}`; ui.historyBox.appendChild(dot); }); }
         function startNewsTicker() { ui.newsTicker.style.display = 'block'; pickNews(); ui.newsContent.addEventListener('animationiteration', pickNews); }
         function pickNews() { const news = NEWS_TITLES[Math.floor(Math.random() * NEWS_TITLES.length)]; ui.newsContent.innerText = news; }
-        function setBet(amount, mult, btnElement) { initAudio(); Sound.playClick(); currentBet = amount; betMultiplier = mult; ui.entryText.innerText = `참가비: ${amount.toLocaleString()} G`; const buttons = document.querySelectorAll('.bet-btn'); buttons.forEach(b => b.classList.remove('active')); if(btnElement) btnElement.classList.add('active'); }
+        
+        function setBet(amount, mult, btnElement) { 
+            initAudio(); Sound.playClick(); 
+            currentBet = amount; betMultiplier = mult; 
+            const buttons = document.querySelectorAll('.bet-btn'); buttons.forEach(b => b.classList.remove('active')); if(btnElement) btnElement.classList.add('active'); 
+        }
+        
         function openShop() { initAudio(); Sound.playClick(); ui.shop.style.display = 'flex'; renderShop(); }
         function closeShop() { initAudio(); Sound.playClick(); ui.shop.style.display = 'none'; }
-        function renderShop() { ui.skinList.innerHTML = ''; SKINS.forEach(skin => { const div = document.createElement('div'); const isOwned = myWallet.ownedSkins.includes(skin.id); const isEquipped = myWallet.equippedSkin === skin.id; div.className = `skin-card ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`; div.innerHTML = `<div style="font-size:10px; font-weight:bold; font-family:'Noto Sans KR'">${skin.name}</div><div class="skin-preview" style="background:${skin.color}; border-radius:3px;"></div><div class="skin-price">${skin.price === 0 ? '무료' : skin.price.toLocaleString() + ' G'}</div><button class="skin-btn ${isOwned ? 'btn-equip' : 'btn-buy'}">${isEquipped ? '장착 중' : (isOwned ? '장착하기' : '구매하기')}</button>`; div.onclick = () => handleSkinAction(skin); ui.skinList.appendChild(div); }); }
+        function renderShop() { ui.skinList.innerHTML = ''; SKINS.forEach(skin => { const div = document.createElement('div'); const isOwned = myWallet.ownedSkins.includes(skin.id); const isEquipped = myWallet.equippedSkin === skin.id; div.className = `skin-card ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`; div.innerHTML = `<div style="font-size:10px; font-weight:bold; font-family:'Noto Sans KR'">${skin.name}</div><div class="skin-preview" style="background:${skin.color}; border-radius:3px;"></div><div class="skin-price">${skin.price === 0 ? '무료' : (skin.price/10000) + '만 G'}</div><button class="skin-btn ${isOwned ? 'btn-equip' : 'btn-buy'}">${isEquipped ? '장착 중' : (isOwned ? '장착하기' : '구매하기')}</button>`; div.onclick = () => handleSkinAction(skin); ui.skinList.appendChild(div); }); }
         function handleSkinAction(skin) { const isOwned = myWallet.ownedSkins.includes(skin.id); if (isOwned) { initAudio(); Sound.playClick(); myWallet.equippedSkin = skin.id; applySkin(); renderShop(); saveData(); } else { if (myWallet.money >= skin.price) { if(confirm(`${skin.name}을(를) 구매하시겠습니까?`)) { initAudio(); Sound.playCash(); myWallet.money -= skin.price; myWallet.ownedSkins.push(skin.id); myWallet.equippedSkin = skin.id; applySkin(); renderShop(); saveData(); } } else alert("잔액이 부족합니다!"); } }
         function applySkin() { const skinId = myWallet.equippedSkin; const skinData = SKINS.find(s => s.id === skinId); ui.heliBody.className = 'pixel-heli'; if(skinData.class) ui.heliBody.classList.add(skinData.class); }
         function addChat(name, msg) { const div = document.createElement('div'); div.className = 'chat-msg'; div.innerHTML = `<span class="chat-name">${name}:</span> ${msg}`; ui.chat.prepend(div); if(ui.chat.children.length > 5) ui.chat.lastChild.remove(); }
         function randomChat(type) { if(Math.random() > 0.6) return; const list = CHAT_LOGS[type]; const msg = list[Math.floor(Math.random() * list.length)]; const botName = participants.length > 0 ? participants[Math.floor(Math.random()*(participants.length-1))+1].name : "익명"; addChat(botName, msg); }
 
-        // [수정] 모바일 터치 이벤트 추가
-        ui.frame.addEventListener('touchstart', (e) => { 
-            e.preventDefault(); // 더블탭 줌 등 기본 동작 방지
-            handleAction(); 
-        }, {passive: false});
+        ui.frame.addEventListener('touchstart', (e) => { e.preventDefault(); handleAction(); }, {passive: false});
         ui.btn.addEventListener('click', (e) => { e.stopPropagation(); handleAction(); });
         document.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); handleAction(); } });
         function handleAction() { if (state.status === 'ready') startGame(); else if (state.status === 'playing') playerEscape(); else if (state.status === 'crashed' || state.status === 'escaped') resetGame(); }
@@ -348,8 +345,8 @@
             if(Math.random() < 0.6) state.events.push({ type: 'airpocket', time: Math.random() * (state.crashTime - 5000) + 3000 });
             if(Math.random() < 0.7) state.events.push({ type: 'syserror', time: Math.random() * (state.crashTime - 5000) + 2000 });
             setupParticipants();
-            ui.center.style.display = 'none'; ui.warning.style.display = 'none'; ui.msg.innerText = "스페이스바/터치로 탈출"; ui.heli.style.top = "150px"; ui.heli.className = "heli-wrapper"; ui.heliBody.classList.remove('heli-rumble', 'rotor-stop'); ui.fever.style.display = 'none'; ui.danger.style.display = 'none'; ui.hudTop.classList.remove('hud-glitch'); ui.chat.innerHTML = '';
-            const playerName = myWallet.name || "파일럿"; addChat("SYSTEM", `${playerName}님, 탑승 환영합니다!`); randomChat('start');
+            ui.center.style.display = 'none'; ui.warning.style.display = 'none'; ui.msg.innerText = "터치하여 익절하세요!"; ui.heli.style.top = "50%"; ui.heli.className = "heli-wrapper"; ui.heliBody.classList.remove('heli-rumble', 'rotor-stop'); ui.fever.style.display = 'none'; ui.danger.style.display = 'none'; ui.chat.innerHTML = '';
+            const playerName = myWallet.name || "파일럿"; addChat("SYSTEM", `${playerName}님 환영합니다!`); randomChat('start');
             lastTimestamp = performance.now(); requestAnimationFrame(gameLoop);
         }
 
@@ -359,7 +356,7 @@
             if (state.speed < CONFIG.maxSpeed) state.speed += (deltaTime * 0.05);
             updateEnginePitch(state.speed); root.style.setProperty('--speed-factor', 1 + (state.speed / 300));
             const flightSec = state.ms / 1000; let bgPos = Math.min(100, (flightSec / 30) * 100); ui.frame.style.backgroundPosition = `center ${100 - bgPos}%`;
-            if (flightSec > 3) { ui.stars1.style.opacity = 1; ui.stars2.style.opacity = 1; } if (flightSec > 8) { ui.stars3.style.opacity = 1; } if (flightSec > 20) { ui.marsFog.style.opacity = 0.6; }
+            if (flightSec > 3) { ui.stars1.style.opacity = 1; ui.stars2.style.opacity = 1; } if (flightSec > 20) { ui.marsFog.style.opacity = 0.6; }
             let rate = CONFIG.baseGoldRate * betMultiplier; 
             if (state.ms >= state.feverTime) { if (!state.isFever) { state.isFever = true; ui.fever.style.display = 'block'; ui.heliBody.classList.add('heli-rumble'); randomChat('fever'); Sound.playTone(600, 'square', 0.5); } if (state.ms >= state.nextRateChange) { state.feverRate = Math.floor(Math.random() * 3) + 2; state.nextRateChange = state.ms + (Math.random() * 1000 + 500); } ui.msg.innerText = `피버 타임! 수익 x${state.feverRate}`; ui.msg.style.color = "#ff3333"; rate = rate * state.feverRate; }
             let earnedNow = Math.floor(deltaTime * rate);
@@ -367,51 +364,39 @@
             const myPlayer = participants.find(p => !p.isBot); if (state.status === 'playing') state.currentRunGold = myPlayer.gold;
             state.events.forEach((ev) => { if (state.ms >= ev.time && !ev.triggered) { ev.triggered = true; triggerEvent(ev.type); } });
             if (state.ms >= state.crashTime) { crashGame(); return; }
-            if (state.isSysError) { ui.score.innerText = "### G"; ui.timer.innerText = "오류"; ui.hudTop.classList.add('hud-glitch'); } else { ui.score.innerText = state.currentRunGold.toLocaleString() + " G"; ui.timer.innerText = (state.ms / 1000).toFixed(2) + "s"; ui.hudTop.classList.remove('hud-glitch'); }
-            ui.speed.innerText = Math.floor(state.speed) + " km/h"; let shake = Math.sin(timestamp / 100) * 3; let finalY = 150 + shake + state.airPocketY; ui.heli.style.top = finalY + "px"; root.style.setProperty('--heli-y', finalY + "px");
+            if (state.isSysError) { ui.score.innerText = "### G"; ui.timer.innerText = "오류"; } else { ui.score.innerText = state.currentRunGold.toLocaleString() + " G"; ui.timer.innerText = (state.ms / 1000).toFixed(2) + "s"; }
+            let shake = Math.sin(timestamp / 100) * 5; ui.heli.style.transform = `translate(-50%, calc(-50% + ${shake}px))`;
             updateLeaderboard(); requestAnimationFrame(gameLoop);
         }
 
-        function triggerEvent(type) { if (type === 'fake') { spawnWarningEffect(); showHudWarning(); ui.msg.innerText = "연기 감지됨!"; randomChat('warning'); Sound.playTone(300, 'sawtooth', 0.3); } else if (type === 'syserror') { state.isSysError = true; ui.msg.innerText = "시스템 오류 발생..."; setTimeout(() => { state.isSysError = false; ui.msg.innerText = "시스템 복구됨"; }, 2000); } else if (type === 'airpocket') { ui.msg.innerText = "난기류 발생!"; let drop = setInterval(() => { state.airPocketY += 10; if (state.airPocketY >= 80) { clearInterval(drop); setTimeout(() => { let rec = setInterval(() => { state.airPocketY -= 5; if(state.airPocketY <= 0) { state.airPocketY = 0; clearInterval(rec); } }, 20); }, 200); } }, 10); } }
-        function playerEscape() { stopEngineSound(); Sound.playCash(); state.status = 'escaped'; const myPlayer = participants.find(p => !p.isBot); myPlayer.status = 'escaped'; let sorted = [...participants].sort((a,b) => b.gold - a.gold); let myRankIndex = sorted.findIndex(p => !p.isBot); let bonusPercent = 0; if(myRankIndex === 0) bonusPercent = 0.3; else if(myRankIndex === 1) bonusPercent = 0.2; else if(myRankIndex === 2) bonusPercent = 0.1; let bonusAmount = Math.floor(state.currentRunGold * bonusPercent); let totalEarned = currentBet + state.currentRunGold + bonusAmount; myWallet.money += totalEarned; updateRank(); saveData(); spawnBotVisual(true); ui.btn.innerText = "다시 시작"; 
-        
-        // [수정] 탈출 시 관전 모드 처리 (UI 바로 띄우지 않음)
-        ui.center.style.display = 'none'; 
-        let resultText = "관전 모드 (결과 대기중)"; if (bonusPercent > 0) resultText = `관전 중... (1~3등 보너스 확보!)`; 
-        ui.msg.innerText = resultText; ui.msg.style.color = "#4CAF50"; randomChat('escape'); }
-        
-        function crashGame() { 
-            stopEngineSound(); Sound.playCrash(); state.status = 'crashed'; 
-            ui.fever.style.display = 'none'; ui.danger.style.display = 'block'; ui.warning.style.display = 'none'; 
-            ui.heliBody.classList.remove('heli-rumble'); ui.hudTop.classList.remove('hud-glitch'); 
-            state.isSysError = false; ui.heli.classList.add('crashed-anim'); 
-            
-            const myPlayer = participants.find(p => !p.isBot); 
-            if (myPlayer.status === 'playing') { myPlayer.status = 'crashed'; myPlayer.gold = 0; } 
-            participants.forEach(p => { if (p.status === 'playing') { p.status = 'crashed'; p.gold = 0; } }); 
-            const crashSec = state.ms / 1000; history.push({ time: crashSec }); if(history.length > 10) history.shift(); 
-            saveData(); updateHistoryUI(); updateLeaderboard(); randomChat('crash'); 
-            
-            // [수정] 2초 뒤 결과창 (관전하던 사람도 이때 결과 확인)
-            setTimeout(() => { 
-                ui.center.style.display = 'block'; ui.danger.style.display = 'none'; 
-                if (myPlayer.status === 'escaped') { 
-                    ui.center.querySelector('h2').innerText = "존버 성공!"; ui.center.querySelector('h2').style.color = "#4CAF50"; 
-                    ui.score.style.color = "#4CAF50"; ui.btn.innerText = "다음 라운드"; ui.msg.innerText = "수익 확보 완료"; 
-                } else { 
-                    ui.score.innerText = "CRASHED"; ui.score.style.color = "#ff3333"; 
-                    ui.center.querySelector('h2').innerText = "존버 실패..."; ui.center.querySelector('h2').style.color = "#ff3333"; 
-                    ui.btn.innerText = "재시도"; if(myWallet.money < 1000) ui.msg.innerText = "파산했습니다. 초기화를 눌러주세요."; else ui.msg.innerText = `-${currentBet.toLocaleString()} G 손실...`; 
-                } 
-            }, 2000); 
+        // [수정] 경고 시 빨간 오버레이 함께 켜기
+        function triggerEvent(type) { 
+            if (type === 'fake') { 
+                spawnWarningEffect(); showHudWarning(); 
+                ui.msg.innerText = "연기 감지됨!"; randomChat('warning'); 
+                Sound.playTone(300, 'sawtooth', 0.3);
+            } 
+            else if (type === 'syserror') { state.isSysError = true; ui.msg.innerText = "시스템 오류 발생..."; setTimeout(() => { state.isSysError = false; ui.msg.innerText = "시스템 복구됨"; }, 2000); } 
+            else if (type === 'airpocket') { ui.msg.innerText = "난기류 발생!"; let drop = setInterval(() => { state.airPocketY += 1; if (state.airPocketY >= 5) { clearInterval(drop); setTimeout(() => { let rec = setInterval(() => { state.airPocketY -= 0.5; if(state.airPocketY <= 0) { state.airPocketY = 0; clearInterval(rec); } }, 20); }, 200); } }, 10); } 
         }
-
+        function playerEscape() { stopEngineSound(); Sound.playCash(); state.status = 'escaped'; const myPlayer = participants.find(p => !p.isBot); myPlayer.status = 'escaped'; let sorted = [...participants].sort((a,b) => b.gold - a.gold); let myRankIndex = sorted.findIndex(p => !p.isBot); let bonusPercent = 0; if(myRankIndex === 0) bonusPercent = 0.3; else if(myRankIndex === 1) bonusPercent = 0.2; else if(myRankIndex === 2) bonusPercent = 0.1; let bonusAmount = Math.floor(state.currentRunGold * bonusPercent); let totalEarned = currentBet + state.currentRunGold + bonusAmount; myWallet.money += totalEarned; updateRank(); saveData(); spawnBotVisual(true); ui.btn.innerText = "다시 시작"; ui.center.style.display = 'none'; let resultText = "관전 중... (결과 대기)"; if (bonusPercent > 0) resultText = `관전 중... (보너스 확보!)`; ui.msg.innerText = resultText; ui.msg.style.color = "#4CAF50"; randomChat('escape'); }
+        function crashGame() { stopEngineSound(); Sound.playCrash(); state.status = 'crashed'; ui.fever.style.display = 'none'; ui.danger.style.display = 'block'; ui.warning.style.display = 'none'; ui.heliBody.classList.remove('heli-rumble'); state.isSysError = false; ui.heli.classList.add('crashed-anim'); const myPlayer = participants.find(p => !p.isBot); if (myPlayer.status === 'playing') { myPlayer.status = 'crashed'; myPlayer.gold = 0; } participants.forEach(p => { if (p.status === 'playing') { p.status = 'crashed'; p.gold = 0; } }); const crashSec = state.ms / 1000; history.push({ time: crashSec }); if(history.length > 10) history.shift(); saveData(); updateHistoryUI(); updateLeaderboard(); randomChat('crash'); setTimeout(() => { ui.center.style.display = 'flex'; ui.danger.style.display = 'none'; if (myPlayer.status === 'escaped') { ui.center.querySelector('h2').innerText = "존버 성공!"; ui.center.querySelector('h2').style.color = "#4CAF50"; ui.score.style.color = "#4CAF50"; ui.btn.innerText = "다음 라운드"; ui.msg.innerText = "수익 확보 완료"; } else { ui.score.innerText = "CRASHED"; ui.score.style.color = "#ff3333"; ui.center.querySelector('h2').innerText = "존버 실패..."; ui.center.querySelector('h2').style.color = "#ff3333"; ui.btn.innerText = "재시도"; if(myWallet.money < 1000) ui.msg.innerText = "파산 위기! 초기화 권장"; else ui.msg.innerText = `-${currentBet.toLocaleString()} G 손실...`; } }, 2000); }
         function setupParticipants() { const playerName = myWallet.name || "나 (YOU)"; participants = [{ name: playerName, isBot: false, status: 'playing', gold: 0, targetTime: null }]; const botNames = ['익절장인', '헬린이', '가즈아', '한강뷰', '구조대', '존버맨', '단타왕', '풀매수', '떡상기원']; botNames.forEach(n => { let target = Math.random() * 30000 + 2000; participants.push({ name: n, isBot: true, status: 'playing', gold: 0, targetTime: target }); }); }
-        function updateLeaderboard() { if (state.isSysError) { ui.lb.innerHTML = ""; for(let i=0; i<10; i++) { let div = document.createElement('div'); div.className = 'lb-row lb-glitch'; div.innerText = "오류..."; ui.lb.appendChild(div); } return; } let sorted = [...participants].sort((a, b) => b.gold - a.gold); ui.lb.innerHTML = ""; sorted.forEach((p, idx) => { let div = document.createElement('div'); div.className = 'lb-row'; let stClass = ''; let stIcon = '🚁'; let bonusTag = ""; if(p.status !== 'crashed') { if(idx === 0) bonusTag = `<span class="bonus-tag bonus-1">+30%</span>`; else if(idx === 1) bonusTag = `<span class="bonus-tag bonus-2">+20%</span>`; else if(idx === 2) bonusTag = `<span class="bonus-tag bonus-3">+10%</span>`; } if (p.status === 'escaped') { stClass = 'lb-escaped'; stIcon = '✅'; } else if (p.status === 'crashed') { stClass = 'lb-dead'; stIcon = '💀'; } if (!p.isBot) stClass += ' lb-me'; div.innerHTML = `<span class="${stClass}">${idx+1}. ${p.name}${bonusTag}</span><span>${stIcon} ${p.gold.toLocaleString()}</span>`; ui.lb.appendChild(div); }); }
-        function spawnWarningEffect() { const centerX = ui.frame.offsetWidth / 2; for(let i=0; i<3; i++) { let s = document.createElement('div'); s.className = 'smoke'; s.style.left = (centerX - 10 + Math.random()*20) + "px"; s.style.top = (parseInt(ui.heli.style.top) + Math.random()*10) + "px"; ui.dynamic.appendChild(s); setTimeout(() => s.remove(), 800); } for(let i=0; i<5; i++) { let sp = document.createElement('div'); sp.className = 'spark'; sp.style.left = (centerX + Math.random()*10) + "px"; sp.style.top = (parseInt(ui.heli.style.top) + 5) + "px"; sp.style.setProperty('--tx', (Math.random()*100 - 50) + 'px'); sp.style.setProperty('--ty', (Math.random()*100 - 50) + 'px'); ui.dynamic.appendChild(sp); setTimeout(() => sp.remove(), 500); } }
-        function showHudWarning() { ui.warning.style.display = 'block'; setTimeout(() => { ui.warning.style.display = 'none'; }, 1500); }
+        function updateLeaderboard() { if (state.isSysError) { ui.lb.innerHTML = ""; return; } let sorted = [...participants].sort((a, b) => b.gold - a.gold); ui.lb.innerHTML = ""; sorted.forEach((p, idx) => { let div = document.createElement('div'); div.className = 'lb-row'; let stClass = ''; let stIcon = '🚁'; let bonusTag = ""; if(p.status !== 'crashed') { if(idx === 0) bonusTag = `<span class="bonus-tag bonus-1">+30%</span>`; else if(idx === 1) bonusTag = `<span class="bonus-tag bonus-2">+20%</span>`; else if(idx === 2) bonusTag = `<span class="bonus-tag bonus-3">+10%</span>`; } if (p.status === 'escaped') { stClass = 'lb-escaped'; stIcon = '✅'; } else if (p.status === 'crashed') { stClass = 'lb-dead'; stIcon = '💀'; } if (!p.isBot) stClass += ' lb-me'; div.innerHTML = `<span class="${stClass}">${idx+1}. ${p.name}${bonusTag}</span><span>${stIcon} ${p.gold.toLocaleString()}</span>`; ui.lb.appendChild(div); }); }
+        function spawnWarningEffect() { const centerX = window.innerWidth / 2; const centerY = window.innerHeight / 2; for(let i=0; i<3; i++) { let s = document.createElement('div'); s.className = 'smoke'; s.style.left = (centerX + Math.random()*20 - 10) + "px"; s.style.top = centerY + "px"; ui.dynamic.appendChild(s); setTimeout(() => s.remove(), 800); } for(let i=0; i<5; i++) { let sp = document.createElement('div'); sp.className = 'spark'; sp.style.left = centerX + "px"; sp.style.top = centerY + "px"; sp.style.setProperty('--tx', (Math.random()*100 - 50) + 'px'); sp.style.setProperty('--ty', (Math.random()*100 - 50) + 'px'); ui.dynamic.appendChild(sp); setTimeout(() => sp.remove(), 500); } }
+        
+        // [수정] 경고 시 빨간 테두리(danger-effect)도 같이 켜기
+        function showHudWarning() { 
+            ui.warning.style.display = 'block'; 
+            ui.danger.style.display = 'block'; // 빨간 점멸 켬
+            setTimeout(() => { 
+                ui.warning.style.display = 'none'; 
+                ui.danger.style.display = 'none'; // 같이 끔
+            }, 1500); 
+        }
+        
         function spawnBotVisual(isPlayer) { let b = document.createElement('div'); b.className = 'bot'; let p = document.createElement('div'); p.className = 'parachute'; b.appendChild(p); if (isPlayer) b.classList.add('player-chute'); ui.dynamic.appendChild(b); setTimeout(() => b.remove(), 3000); }
-        function resetGame() { state.status = 'ready'; ui.btn.innerText = "게임 시작"; ui.center.querySelector('h2').innerText = "존버콥터"; ui.center.querySelector('h2').style.color = "white"; ui.score.innerText = "0 G"; ui.score.style.color = "#ffd700"; ui.timer.innerText = "00.00s"; ui.heli.style.transform = "rotate(0deg)"; ui.msg.innerText = "터치/스페이스바로 탈출!"; ui.msg.style.color = "#ccc"; ui.warning.style.display = 'none'; ui.danger.style.display = 'none'; ui.hudTop.classList.remove('hud-glitch'); state.isSysError = false; ui.chat.innerHTML=''; ui.frame.style.backgroundPosition = "center bottom"; ui.stars1.style.opacity = 0; ui.stars2.style.opacity = 0; ui.stars3.style.opacity = 0; ui.marsFog.style.opacity = 0; }
+        function resetGame() { state.status = 'ready'; ui.btn.innerText = "게임 시작"; ui.center.querySelector('h2').innerText = "존버콥터"; ui.center.querySelector('h2').style.color = "white"; ui.score.innerText = "0 G"; ui.score.style.color = "#ffd700"; ui.timer.innerText = "00.00s"; ui.heli.style.transform = "translate(-50%, -50%) rotate(0deg)"; ui.msg.innerText = "터치하여 탈출"; ui.msg.style.color = "#ccc"; ui.warning.style.display = 'none'; ui.danger.style.display = 'none'; ui.chat.innerHTML=''; ui.frame.style.backgroundPosition = "center bottom"; ui.stars1.style.opacity = 0; ui.stars2.style.opacity = 0; ui.marsFog.style.opacity = 0; }
     </script>
 </body>
 </html>
